@@ -7,19 +7,13 @@ import 'swiper/css/pagination'
 
 import { FIELD_QUOTES } from '@/shared/constants/quotes'
 import { usePrefersReducedMotion } from '@/shared/hooks/use-media-query'
-import { hashString } from '@/shared/lib/utils'
-import { todayKey } from '@/shared/lib/date'
 import { cn } from '@/shared/lib/utils'
 
-/**
- * Embaralha uma vez por dia, de forma deterministica.
- * Math.random() aqui reordenaria as frases a cada re-render — o slide trocaria
- * de conteudo no meio da transicao.
- */
-function shuffleByDay<T>(items: readonly T[], seed: string): T[] {
+/** Fisher-Yates. */
+function shuffle<T>(items: readonly T[]): T[] {
   const out = [...items]
   for (let i = out.length - 1; i > 0; i--) {
-    const j = hashString(`${seed}-${i}`) % (i + 1)
+    const j = Math.floor(Math.random() * (i + 1))
     ;[out[i], out[j]] = [out[j], out[i]]
   }
   return out
@@ -27,7 +21,12 @@ function shuffleByDay<T>(items: readonly T[], seed: string): T[] {
 
 export function QuoteSlider({ className }: { className?: string }) {
   const reducedMotion = usePrefersReducedMotion()
-  const quotes = useMemo(() => shuffleByDay(FIELD_QUOTES, todayKey()), [])
+  // Uma ordem nova a cada abertura do app, nao a cada dia: com a ordem travada
+  // por 24h, quem abre tres vezes no mesmo dia le sempre as mesmas primeiras
+  // frases. O useMemo com deps vazias e o que segura o Math.random() — sem ele
+  // a lista se reordenaria a cada render e o slide trocaria de conteudo no
+  // meio da transicao.
+  const quotes = useMemo(() => shuffle(FIELD_QUOTES), [])
 
   return (
     <div className={cn('quote-swiper', className)}>

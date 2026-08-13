@@ -49,8 +49,22 @@ export function hashString(input: string) {
   return Math.abs(hash)
 }
 
+/**
+ * Finalizador do murmur3. Espalha os bits de um inteiro.
+ *
+ * Necessario porque o hashString e linear: datas consecutivas geram hashes
+ * consecutivos, e `% length` direto viraria um passeio em fila pela lista
+ * (dia 1 -> item 0, dia 2 -> item 1, ...). Com o mix, um dia de diferenca
+ * muda o resultado inteiro.
+ */
+function mix32(h: number): number {
+  h = Math.imul(h ^ (h >>> 16), 0x45d9f3b)
+  h = Math.imul(h ^ (h >>> 16), 0x45d9f3b)
+  return (h ^ (h >>> 16)) >>> 0
+}
+
 export function pickByDate<T>(items: readonly T[], dateKey: string): T {
-  return items[hashString(dateKey) % items.length]
+  return items[mix32(hashString(dateKey)) % items.length]
 }
 
 export function clamp(value: number, min: number, max: number) {
