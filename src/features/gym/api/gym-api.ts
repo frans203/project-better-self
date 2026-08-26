@@ -54,6 +54,27 @@ export function isGymWorkout(w: Pick<WorkoutRow, 'kind'>): boolean {
   return (w.kind ?? 'gym') === 'gym'
 }
 
+/** Erro do PostgREST em formato util — `code` nem sempre vem preenchido. */
+type PgError = { code?: string; message?: string }
+
+/**
+ * O banco ainda nao conhece essa coluna?
+ *
+ * 42703 e o erro do Postgres; PGRST204 e a versao do PostgREST quando o
+ * schema cache nao tem o campo. Os dois aparecem enquanto a 0003 nao roda.
+ */
+export function isMissingColumn(error: PgError, column: string): boolean {
+  if (error.code === '42703' || error.code === 'PGRST204') {
+    return !error.message || error.message.includes(column)
+  }
+  return false
+}
+
+/** A tabela inteira ainda nao existe (0003 nao rodou). */
+export function isMissingTable(error: PgError): boolean {
+  return error.code === 'PGRST205' || error.code === '42P01' || error.code === 'PGRST200'
+}
+
 export const exercisesQuery = () =>
   queryOptions({
     queryKey: queryKeys.exercises,
@@ -99,8 +120,7 @@ export const workoutsQuery = (from: DayKey, to: DayKey) =>
           uma vez. Cair para a consulta sem WOD mantem tudo que ja existia
           funcionando, e o WOD aparece sozinho assim que a migracao rodar.
         */
-        const missingRelation = error.code === 'PGRST200' || error.code === '42P01'
-        if (!missingRelation) throw error
+        if (!isMissingTable(error)) throw error
 
         const fallback = await base()
         if (fallback.error) throw fallback.error
@@ -233,12 +253,31 @@ export function useCreateWorkout() {
     mutationFn: async (input: WorkoutInput) => {
       const { sets, ...workout } = input
 
-      const { data: created, error } = await supabase
+      let { data: created, error } = await supabase
         .from('workouts')
         .insert({ ...workout, user_id: getUserId() })
         .select()
         .single()
+
+      /*
+        Antes da 0003 rodar a coluna `kind` nao existe, e o PostgREST recusa o
+        insert inteiro (42703 / PGRST204) — o que quebrava ate o registro de
+        musculacao, que nao tem nada a ver com WOD. Regravar sem o campo mantem
+        o fluxo antigo funcionando; a linha nasce 'gym' de qualquer forma assim
+        que o DEFAULT existir.
+      */
+      if (error && isMissingColumn(error, 'kind')) {
+        const { kind: _kind, ...withoutKind } = workout
+        void _kind
+        ;({ data: created, error } = await supabase
+          .from('workouts')
+          .insert({ ...withoutKind, user_id: getUserId() })
+          .select()
+          .single())
+      }
+
       if (error) throw error
+      if (!created) throw new Error('Treino não foi criado.')
 
       if (sets.length > 0) {
         const { error: setsError } = await supabase.from('workout_sets').insert(

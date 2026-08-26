@@ -5,6 +5,19 @@ import { getUserId } from '@/shared/lib/user'
 import { showSnack } from '@/shared/components/ui'
 import type { DayKey } from '@/shared/lib/date'
 import type { WodMovement, WodRow, WodScoring } from '@/shared/types/database.types'
+import { isMissingTable } from './gym-api'
+
+/**
+ * O WOD depende de tabelas que so existem depois da 0003. Enquanto ela nao
+ * rodar, o erro cru do PostgREST ("Could not find the table 'public.wods' in
+ * the schema cache") nao diz a ninguem o que fazer. Este diz.
+ */
+const MIGRATION_HINT =
+  'O CrossFit precisa da migração 0003_wods.sql. Rode o arquivo no SQL Editor do Supabase e tente de novo.'
+
+function withMigrationHint(error: { code?: string; message?: string }): Error {
+  return new Error(isMissingTable(error) ? MIGRATION_HINT : (error.message ?? 'Erro ao salvar.'))
+}
 
 export const wodsQuery = () =>
   queryOptions({
@@ -15,7 +28,12 @@ export const wodsQuery = () =>
         .select('*')
         .eq('user_id', getUserId())
         .order('name')
-      if (error) throw error
+      // Sem a 0003 a tabela nao existe: lista vazia deixa o modal abrir e
+      // mostrar o catalogo de benchmarks, em vez de estourar antes de renderizar.
+      if (error) {
+        if (isMissingTable(error)) return []
+        throw error
+      }
       // `movements` e jsonb: o supabase-js devolve o valor cru. Um WOD gravado
       // com o campo vazio viria null e quebraria todo .map() na tela.
       return (data ?? []).map((w) => ({ ...w, movements: w.movements ?? [] }))
@@ -62,7 +80,7 @@ export function useResolveWod() {
       })
       .select()
       .single()
-    if (error) throw error
+    if (error) throw withMigrationHint(error)
 
     void qc.invalidateQueries({ queryKey: queryKeys.wods })
     return { ...data, movements: data.movements ?? [] }
@@ -111,7 +129,7 @@ export function useCreateWodWorkout() {
         })
         .select()
         .single()
-      if (error) throw error
+      if (error) throw withMigrationHint(error)
 
       const { error: resultError } = await supabase.from('wod_results').insert({
         user_id: getUserId(),
@@ -126,7 +144,7 @@ export function useCreateWodWorkout() {
       })
       if (resultError) {
         await supabase.from('workouts').delete().eq('id', created.id)
-        throw resultError
+        throw withMigrationHint(resultError)
       }
 
       return created
