@@ -45,13 +45,23 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   /**
    * Rotulo dentro do campo, que sobe ao focar ou preencher.
    *
-   * Use em campo denso (linha de serie, grade de metricas) onde o rotulo em
-   * cima gastaria altura demais. NAO use com type="date": input de data nunca
-   * satisfaz :placeholder-shown, entao o rotulo nasceria em cima do valor.
+   * Ligado por padrao em todo campo que tenha `label` — e o comportamento que
+   * o app inteiro usa. Passe `floating={false}` para voltar ao rotulo fixo
+   * acima do campo.
    */
   floating?: boolean
   wrapperClassName?: string
 }
+
+/**
+ * Tipos que nunca ficam "vazios" para o CSS.
+ *
+ * O seletor do rotulo flutuante e `:placeholder-shown`, e um input de data ou
+ * hora sempre renderiza a mascara (dd/mm/aaaa) em vez do placeholder — entao
+ * ele nunca casa, e o rotulo nasceria empilhado em cima do valor. Esses
+ * continuam com o rotulo fixo acima.
+ */
+const NO_FLOAT_TYPES = new Set(['date', 'time', 'datetime-local', 'month', 'week', 'color', 'range'])
 
 export function Input({
   label,
@@ -62,18 +72,22 @@ export function Input({
   wrapperClassName,
   className,
   placeholder,
+  type,
   ...props
 }: InputProps) {
+  const canFloat = Boolean(label) && !NO_FLOAT_TYPES.has(type ?? 'text')
+  const isFloating = (floating ?? true) && canFloat
+
   return (
     <FieldShell
       label={label}
       hint={hint}
       error={error}
       className={wrapperClassName}
-      floating={floating}
+      floating={isFloating}
     >
       {(id) =>
-        floating ? (
+        isFloating ? (
           /*
             Ordem do DOM importa: o CSS usa `input:focus + label`, entao o
             rotulo tem que ser o irmao imediatamente seguinte ao input.
@@ -84,6 +98,7 @@ export function Input({
           <div className="field-float">
             <input
               id={id}
+              type={type}
               placeholder={placeholder ?? ' '}
               className={cn('field-input', suffix && 'pr-12', error && 'border-fail', className)}
               aria-invalid={error ? true : undefined}
@@ -98,6 +113,7 @@ export function Input({
           <div className="relative">
             <input
               id={id}
+              type={type}
               placeholder={placeholder}
               className={cn('field-input', suffix && 'pr-12', error && 'border-fail', className)}
               aria-invalid={error ? true : undefined}

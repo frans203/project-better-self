@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Check, ExternalLink, Minus, X } from 'lucide-react'
+import { Input } from '@/shared/components/ui'
 import type { HabitMeta } from '@/shared/constants/habits'
 import type { HabitLogRow } from '@/shared/types/database.types'
 import { cn } from '@/shared/lib/utils'
@@ -99,25 +100,30 @@ export function HabitRow({ habit, log, locked = false, onToggle, onValueChange }
 
       <div className="flex shrink-0 items-center gap-2">
         {habit.unit && (
-          <div className="relative w-28">
-            <input
-              type="number"
-              inputMode="decimal"
-              min={0}
-              step="any"
-              value={draft}
-              disabled={locked}
-              placeholder="0"
-              aria-label={`${habit.label} — ${habit.unitLabel}`}
-              onChange={(e) => setDraft(e.target.value)}
-              onBlur={commitValue}
-              onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
-              className="field-input py-2 pr-10 text-right text-sm [appearance:textfield] disabled:opacity-50 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-            />
-            <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-[10px] uppercase text-text-muted">
-              {habit.unit}
-            </span>
-          </div>
+          /*
+            O rotulo e a unidade por extenso ("minutos", "paginas"), que sobe
+            ao focar. Antes era so um placeholder "0" com aria-label: quem
+            digitava perdia a unica pista de que aquele numero era minuto ou
+            pagina. O sufixo curto sai — com o rotulo dentro do campo ele
+            passaria a ser a mesma informacao duas vezes.
+          */
+          <Input
+            /* w-32 e nao w-28: "quilometros" em repouso pede 86px e o campo
+               menor so oferecia 84, entao o rotulo mais longo vinha cortado. */
+            wrapperClassName="w-32 shrink-0"
+            label={habit.unitLabel ?? habit.unit}
+            type="number"
+            inputMode="decimal"
+            min={0}
+            step="any"
+            value={draft}
+            disabled={locked}
+            placeholder="0"
+            onChange={(e) => setDraft(e.target.value)}
+            onBlur={commitValue}
+            onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+            className="text-right text-sm [appearance:textfield] disabled:opacity-50 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+          />
         )}
 
         {habit.detailRoute && (

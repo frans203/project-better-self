@@ -1,0 +1,3 @@
+# SPA fallback para Netlify (o equivalente do vercel.json).
+# Inofensivo em outras hospedagens: e so um arquivo de texto em /dist.
+/*  /index.html  200
