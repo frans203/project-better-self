@@ -101,11 +101,16 @@ supabase/
 - Nivel (`shared/lib/rank.ts`) e 100% derivado de habit_logs + runs + workout_sets + wod_results. Nada persistido,
   entao nao ha migracao nem linha antiga sem valor. So o `celebrated` do ui-store (localStorage)
   guarda quais requisitos ja renderam confete.
-- **Reps do nivel somam academia + WOD; volume soma so academia.** WOD nao tem workout_sets, entao
-  passa por `wodRepsOf()`: AMRAP/EMOM/rounds usam `total_reps` (coluna gerada, exato); for_time usa a
-  soma de `wods.movements` (exato em WOD de passagem unica, subestima em 'N rounds for time' como a
-  Helen). Volume fica de fora de proposito — WOD e peso corporal, e estimar carga pelo peso do usuario
-  seria numero fabricado num painel de decisao.
+- **Academia e WOD sao metricas SEPARADAS no nivel.** `reps` = so workout_sets (janela 7 dias);
+  `wod` = so CrossFit (janela 15 dias). Somar os dois fazia uma Cindy (~330 reps de peso corporal)
+  valer 7 semanas de academia (~17 reps de barra pesada por treino). Volume em kg e so academia:
+  WOD nao tem carga registrada e estimar pelo peso corporal seria numero inventado.
+- `wodRepsOf()` traduz resultado em reps: AMRAP/EMOM/rounds usam `total_reps` (coluna gerada, exato);
+  for_time usa a soma de `wods.movements` (exato em passagem unica, subestima em 'N rounds for time'
+  como a Helen — subestima, nunca conta a mais).
+- A regua de `reps` esta calibrada no treino real do operador (~4 series de ~4 reps = ~17/sessao),
+  nao num treino generico de 10-12 reps. A coluna `wod` comeca em 0 no BRONZE de proposito: da pra
+  subir o primeiro nivel so levantando peso, e condicionamento so vira requisito de PRATA pra cima.
 
 ## Gotchas
 

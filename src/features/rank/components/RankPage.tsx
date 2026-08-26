@@ -97,7 +97,8 @@ export function RankPage() {
               <p className="mb-4 text-[10px] leading-relaxed text-text-muted">
                 {metCount} de {rank.requirements.length} cumpridos. Toda medida sobe a cada
                 nível — pace é a única que desce, porque exigir mais é exigir menos tempo por km.
-                Repetições somam academia e WOD; volume conta só a carga levantada.
+                Academia e WOD são medidas separadas: a barra pesada e o peso corporal não
+                cabem na mesma régua. O WOD só passa a ser cobrado a partir de PRATA.
               </p>
               <RequirementList requirements={rank.requirements} striking={struck} />
             </Panel>

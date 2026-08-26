@@ -27,26 +27,33 @@ export function useRank(): { rank: RankState; isPending: boolean; isError: boole
   const { logs, isPending: logsPending, isError } = useHabitWindow()
   const { data: profile } = useQuery(profileQuery())
   const { data: runs = [], isPending: runsPending } = useQuery(runsQuery(longFrom, today))
+  /*
+    Busca 15 dias de treino, nao 7: academia e WOD tem janelas diferentes
+    (7 e 15 dias). Uma consulta so, filtrada por data depois — duas consultas
+    sobrepostas gastariam duas idas ao banco pelo mesmo periodo.
+  */
   const { data: workouts = [], isPending: workoutsPending } = useQuery(
-    workoutsQuery(weekFrom, today),
+    workoutsQuery(longFrom, today),
   )
 
   const rank = useMemo(() => {
     const startDate = profile?.start_date ?? today
     const containment = streakFor('no_pmo', logs, startDate).current
 
-    // Series de musculacao da janela de 7 dias, achatadas. WOD nao aparece
-    // aqui: nao tem workout_sets, e setsOf devolve [] em vez de estourar.
-    const sets = workouts.flatMap((w) => setsOf(w))
+    // Academia: so os 7 dias. WOD nao aparece aqui — nao tem workout_sets, e
+    // setsOf devolve [] em vez de estourar.
+    const sets = workouts
+      .filter((w) => w.workout_date >= weekFrom)
+      .flatMap((w) => setsOf(w))
 
-    // As reps do WOD entram por fora, pela mesma janela. Sem isto uma Cindy de
-    // 12 rounds contaria zero e uma semana so de CrossFit leria como parada.
+    // CrossFit: os 15 dias inteiros, porque WOD aqui nao e semanal. Metrica
+    // propria — nao entra nas reps de academia.
     const wodReps = workouts.reduce((acc, w) => acc + wodRepsOf(wodResultOf(w)), 0)
 
     return computeRank(
       buildMetrics({ habitLogs: logs, runs, sets, wodReps, containmentStreak: containment }),
     )
-  }, [logs, runs, workouts, profile?.start_date, today])
+  }, [logs, runs, workouts, profile?.start_date, today, weekFrom])
 
   return {
     rank,

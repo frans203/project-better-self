@@ -11,7 +11,7 @@ import { fmtInt, fmtNumber, fmtPace } from './utils'
  *
  * A regra tem duas partes:
  *
- *   1. NIVEL BASE — o mais alto cujos SETE requisitos estao cumpridos. Cada
+ *   1. NIVEL BASE — o mais alto cujos OITO requisitos estao cumpridos. Cada
  *      nivel exige mais do que o anterior em toda medida, nunca menos.
  *
  *   2. PENALIDADE DE CONTENCAO — recaida derruba nivel, sempre. Uma nos
@@ -50,6 +50,7 @@ export type MetricKey =
   | 'containment'
   | 'volume'
   | 'reps'
+  | 'wod'
   | 'km'
   | 'pace'
   | 'meditation'
@@ -60,6 +61,7 @@ interface RankThreshold {
   containment: number
   volume: number
   reps: number
+  wod: number
   km: number
   pace: number
   meditation: number
@@ -72,16 +74,35 @@ interface RankThreshold {
  * Toda coluna cresce de cima para baixo. `pace` e a excecao invertida: exigir
  * mais e exigir MENOS segundos por km, entao o numero cai — o rigor sobe do
  * mesmo jeito.
+ *
+ * `reps` (academia, 7 dias) esta calibrado no treino real do operador: ~4
+ * series de ~4 repeticoes por sessao, ou seja ~17 reps por treino. A regua
+ * antiga (60 a 800) vinha de um treino generico de 10-12 reps e era
+ * inalcancavel para quem levanta pesado e baixo — 800 reps/semana daria 200
+ * series. Aqui BRONZE sao ~2 treinos e MESTRE sao ~5-6 treinos densos.
+ *
+ * `wod` (CrossFit, 15 dias) e coluna separada de proposito: e trabalho
+ * metabolico de peso corporal, nao carga na barra, e somar os dois numa
+ * metrica so fazia uma Cindy valer 7 semanas de academia.
+ *
+ * A janela e de 15 dias porque CrossFit aqui nao e semanal — a coluna comeca
+ * em ZERO no BRONZE, entao da pra subir os primeiros niveis so levantando
+ * peso. Ela so passa a cobrar de PRATA em diante, e cresce devagar: a ideia e
+ * que hipertrofia e perda de gordura continuem no centro, e o condicionamento
+ * vire requisito de verdade so na parte alta da escada.
+ *
+ * Referencias usadas: a primeira Cindy do operador deu 331 reps (11 rounds);
+ * Tom Holland faz 27 rounds (810 reps) nos mesmos 20 minutos.
  */
 const THRESHOLDS: Record<Exclude<RankKey, 'lixo'>, RankThreshold> = {
-  bronze: { containment: 3, volume: 1_000, reps: 60, km: 5, pace: 480, meditation: 30, reading: 50 },
-  prata: { containment: 7, volume: 2_500, reps: 120, km: 10, pace: 450, meditation: 60, reading: 110 },
-  platina: { containment: 14, volume: 4_500, reps: 200, km: 15, pace: 420, meditation: 105, reading: 190 },
-  diamante: { containment: 21, volume: 7_000, reps: 300, km: 21, pace: 400, meditation: 160, reading: 290 },
-  soldado: { containment: 30, volume: 10_000, reps: 400, km: 28, pace: 380, meditation: 225, reading: 410 },
-  sargento: { containment: 45, volume: 13_500, reps: 520, km: 36, pace: 360, meditation: 300, reading: 550 },
-  capitao: { containment: 60, volume: 17_500, reps: 650, km: 45, pace: 340, meditation: 390, reading: 710 },
-  mestre: { containment: 90, volume: 22_000, reps: 800, km: 55, pace: 320, meditation: 495, reading: 900 },
+  bronze: { containment: 3, volume: 1_000, reps: 35, wod: 0, km: 5, pace: 480, meditation: 30, reading: 50 },
+  prata: { containment: 7, volume: 2_500, reps: 50, wod: 150, km: 10, pace: 450, meditation: 60, reading: 110 },
+  platina: { containment: 14, volume: 4_500, reps: 70, wod: 350, km: 15, pace: 420, meditation: 105, reading: 190 },
+  diamante: { containment: 21, volume: 7_000, reps: 90, wod: 600, km: 21, pace: 400, meditation: 160, reading: 290 },
+  soldado: { containment: 30, volume: 10_000, reps: 110, wod: 900, km: 28, pace: 380, meditation: 225, reading: 410 },
+  sargento: { containment: 45, volume: 13_500, reps: 130, wod: 1_300, km: 36, pace: 360, meditation: 300, reading: 550 },
+  capitao: { containment: 60, volume: 17_500, reps: 155, wod: 1_800, km: 45, pace: 340, meditation: 390, reading: 710 },
+  mestre: { containment: 90, volume: 22_000, reps: 185, wod: 2_400, km: 55, pace: 320, meditation: 495, reading: 900 },
 }
 
 interface MetricMeta {
@@ -102,7 +123,13 @@ export const METRICS: MetricMeta[] = [
     format: (v) => `${fmtInt(v)} dias`,
   },
   { key: 'volume', label: 'Volume levantado', window: '7 dias', format: (v) => `${fmtInt(v)} kg` },
-  { key: 'reps', label: 'Repetições', window: '7 dias', format: (v) => fmtInt(v) },
+  { key: 'reps', label: 'Repetições na academia', window: '7 dias', format: (v) => fmtInt(v) },
+  {
+    key: 'wod',
+    label: 'Repetições no WOD',
+    window: '15 dias',
+    format: (v) => fmtInt(v),
+  },
   { key: 'km', label: 'Quilometragem', window: '7 dias', format: (v) => `${fmtNumber(v, 1)} km` },
   {
     key: 'pace',
@@ -118,7 +145,10 @@ export const METRICS: MetricMeta[] = [
 export interface RankMetrics {
   containment: number
   volume: number
+  /** So academia: soma de workout_sets validos na janela de 7 dias. */
   reps: number
+  /** So CrossFit: reps feitas em WOD na janela de 15 dias. */
+  wod: number
   km: number
   /** null = nenhuma corrida cronometrada na janela. */
   pace: number | null
@@ -132,6 +162,7 @@ export const EMPTY_METRICS: RankMetrics = {
   containment: 0,
   volume: 0,
   reps: 0,
+  wod: 0,
   km: 0,
   pace: null,
   meditation: 0,
@@ -284,12 +315,15 @@ export function buildMetrics(input: {
   runs: RunRow[]
   sets: WorkoutSetRow[]
   /**
-   * Repeticoes vindas de WOD na mesma janela dos sets (`wodRepsOf`).
+   * Repeticoes de WOD na janela de 15 dias (`wodRepsOf`).
    *
-   * Entram em `reps` mas NAO em `volume`: CrossFit e peso corporal, e nao ha
-   * carga registrada para somar. A assimetria e intencional — volume continua
-   * significando "peso que voce levantou", reps significa "trabalho que voce
-   * fez", venha ele da barra ou do WOD.
+   * Metrica PROPRIA, nao somada em `reps`. Uma Cindy sao ~330 reps de peso
+   * corporal contra ~17 reps de barra pesada num treino de academia: juntar
+   * as duas numa metrica so fazia uma sessao de CrossFit valer sete semanas
+   * de musculacao, e a regua deixava de medir qualquer coisa.
+   *
+   * Nao entra em `volume` tampouco — WOD nao tem carga registrada, e estimar
+   * pelo peso corporal seria numero inventado.
    */
   wodReps?: number
   containmentStreak: number
@@ -297,7 +331,7 @@ export function buildMetrics(input: {
   const { habitLogs, runs, sets, wodReps = 0, containmentStreak } = input
 
   let volume = 0
-  let reps = wodReps
+  let reps = 0
   for (const s of sets) {
     if (s.is_warmup) continue
     volume += (s.weight_kg ?? 0) * (s.reps ?? 0)
@@ -339,6 +373,7 @@ export function buildMetrics(input: {
     containment: Math.max(0, containmentStreak),
     volume: Math.round(volume),
     reps,
+    wod: Math.max(0, Math.round(wodReps)),
     km: Math.round(km * 100) / 100,
     pace: pacedKm > 0 ? pacedSec / pacedKm : null,
     meditation: Math.round(meditation),
