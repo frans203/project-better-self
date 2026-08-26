@@ -15,7 +15,7 @@ import type { DayKey } from '@/shared/lib/date'
 import { showSnack } from '@/shared/components/ui'
 
 export type WodResultWithWod = WodResultRow & {
-  wods: Pick<WodRow, 'name' | 'scoring' | 'time_cap_min'> | null
+  wods: Pick<WodRow, 'name' | 'scoring' | 'time_cap_min' | 'movements'> | null
 }
 
 export interface WorkoutWithSets extends WorkoutRow {
@@ -52,6 +52,37 @@ export function wodResultOf(w: WorkoutWithSets): WodResultWithWod | null {
 /** Treino de academia = tem serie. Dado gravado antes da 0003 le como 'gym'. */
 export function isGymWorkout(w: Pick<WorkoutRow, 'kind'>): boolean {
   return (w.kind ?? 'gym') === 'gym'
+}
+
+/**
+ * Repeticoes efetivamente feitas num WOD.
+ *
+ * Existe porque WOD nao tem `workout_sets`: sem isto, uma Cindy de 12 rounds
+ * (360 reps) contaria zero no requisito de repeticoes do nivel, e uma semana
+ * so de CrossFit apareceria como semana parada.
+ *
+ * Dois caminhos, porque as duas familias de WOD medem coisas diferentes:
+ *
+ * - AMRAP / EMOM / rounds: o placar E o volume. `total_reps` ja e coluna
+ *   gerada no banco (rounds x reps_per_round + extra), entao e exato.
+ * - FOR TIME: o placar e o tempo; o volume e a prescricao do WOD, que esta
+ *   em `wods.movements`. Exato para WOD de passagem unica (Angie, Fran,
+ *   Murph). Para um "N rounds for time" a prescricao guardada e a de UM
+ *   round, entao conta so essa parte — subestima, nunca inventa a mais.
+ *
+ * Volume em kg deliberadamente NAO sai daqui: WOD e peso corporal, e estimar
+ * carga a partir do peso do usuario seria numero fabricado num painel usado
+ * para decidir se subiu de nivel.
+ */
+export function wodRepsOf(result: WodResultWithWod | null): number {
+  if (!result) return 0
+
+  const scoring = result.wods?.scoring
+  if (scoring === 'for_time' || scoring === 'other') {
+    return (result.wods?.movements ?? []).reduce((acc, m) => acc + (m.reps || 0), 0)
+  }
+
+  return result.total_reps ?? 0
 }
 
 /** Erro do PostgREST em formato util — `code` nem sempre vem preenchido. */
@@ -107,7 +138,7 @@ export const workoutsQuery = (from: DayKey, to: DayKey) =>
       // sem uma segunda ida ao banco. Treino de academia devolve null.
       const { data, error } = await supabase
         .from('workouts')
-        .select('*, workout_sets(*), wod_results(*, wods(name, scoring, time_cap_min))')
+        .select('*, workout_sets(*), wod_results(*, wods(name, scoring, time_cap_min, movements))')
         .eq('user_id', getUserId())
         .gte('workout_date', from)
         .lte('workout_date', to)

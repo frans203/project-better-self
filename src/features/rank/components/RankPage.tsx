@@ -94,9 +94,10 @@ export function RankPage() {
               {rank.next ? `Para ${RANK_LABEL[rank.next]}` : 'Requisitos de MESTRE'}
             </SectionLabel>
             <Panel className="p-5">
-              <p className="mb-4 text-[10px] text-text-muted">
+              <p className="mb-4 text-[10px] leading-relaxed text-text-muted">
                 {metCount} de {rank.requirements.length} cumpridos. Toda medida sobe a cada
                 nível — pace é a única que desce, porque exigir mais é exigir menos tempo por km.
+                Repetições somam academia e WOD; volume conta só a carga levantada.
               </p>
               <RequirementList requirements={rank.requirements} striking={struck} />
             </Panel>

@@ -283,12 +283,21 @@ export function buildMetrics(input: {
   habitLogs: HabitLogRow[]
   runs: RunRow[]
   sets: WorkoutSetRow[]
+  /**
+   * Repeticoes vindas de WOD na mesma janela dos sets (`wodRepsOf`).
+   *
+   * Entram em `reps` mas NAO em `volume`: CrossFit e peso corporal, e nao ha
+   * carga registrada para somar. A assimetria e intencional — volume continua
+   * significando "peso que voce levantou", reps significa "trabalho que voce
+   * fez", venha ele da barra ou do WOD.
+   */
+  wodReps?: number
   containmentStreak: number
 }): RankMetrics {
-  const { habitLogs, runs, sets, containmentStreak } = input
+  const { habitLogs, runs, sets, wodReps = 0, containmentStreak } = input
 
   let volume = 0
-  let reps = 0
+  let reps = wodReps
   for (const s of sets) {
     if (s.is_warmup) continue
     volume += (s.weight_kg ?? 0) * (s.reps ?? 0)

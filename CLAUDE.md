@@ -98,9 +98,14 @@ supabase/
   `wodResultOf()` do gym-api em vez de tocar nos campos direto.
 - `wod_results.total_reps`: **coluna gerada** (rounds x reps_per_round + extra_reps). `reps_per_round`
   e copiado do WOD no registro: editar a definicao depois nao reescreve o placar historico.
-- Nivel (`shared/lib/rank.ts`) e 100% derivado de habit_logs + runs + workout_sets. Nada persistido,
+- Nivel (`shared/lib/rank.ts`) e 100% derivado de habit_logs + runs + workout_sets + wod_results. Nada persistido,
   entao nao ha migracao nem linha antiga sem valor. So o `celebrated` do ui-store (localStorage)
   guarda quais requisitos ja renderam confete.
+- **Reps do nivel somam academia + WOD; volume soma so academia.** WOD nao tem workout_sets, entao
+  passa por `wodRepsOf()`: AMRAP/EMOM/rounds usam `total_reps` (coluna gerada, exato); for_time usa a
+  soma de `wods.movements` (exato em WOD de passagem unica, subestima em 'N rounds for time' como a
+  Helen). Volume fica de fora de proposito — WOD e peso corporal, e estimar carga pelo peso do usuario
+  seria numero fabricado num painel de decisao.
 
 ## Gotchas
 

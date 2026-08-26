@@ -6,7 +6,7 @@ import { buildMetrics, computeRank, EMPTY_METRICS, type RankState } from '@/shar
 import { profileQuery } from '@/features/profile/api/profile-api'
 import { useHabitWindow } from '@/features/checkin/hooks/use-habit-window'
 import { runsQuery } from '@/features/running/api/running-api'
-import { setsOf, workoutsQuery } from '@/features/gym/api/gym-api'
+import { setsOf, wodRepsOf, wodResultOf, workoutsQuery } from '@/features/gym/api/gym-api'
 
 /** Pace, meditacao e leitura olham 15 dias; volume, reps e km olham 7. */
 const LONG_WINDOW = 15
@@ -35,11 +35,17 @@ export function useRank(): { rank: RankState; isPending: boolean; isError: boole
     const startDate = profile?.start_date ?? today
     const containment = streakFor('no_pmo', logs, startDate).current
 
-    // Series da janela de 7 dias, achatadas. WOD nao entra: nao tem
-    // workout_sets, e setsOf devolve [] em vez de estourar.
+    // Series de musculacao da janela de 7 dias, achatadas. WOD nao aparece
+    // aqui: nao tem workout_sets, e setsOf devolve [] em vez de estourar.
     const sets = workouts.flatMap((w) => setsOf(w))
 
-    return computeRank(buildMetrics({ habitLogs: logs, runs, sets, containmentStreak: containment }))
+    // As reps do WOD entram por fora, pela mesma janela. Sem isto uma Cindy de
+    // 12 rounds contaria zero e uma semana so de CrossFit leria como parada.
+    const wodReps = workouts.reduce((acc, w) => acc + wodRepsOf(wodResultOf(w)), 0)
+
+    return computeRank(
+      buildMetrics({ habitLogs: logs, runs, sets, wodReps, containmentStreak: containment }),
+    )
   }, [logs, runs, workouts, profile?.start_date, today])
 
   return {
