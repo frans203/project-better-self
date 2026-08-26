@@ -13,7 +13,7 @@ function translateError(message: string): string {
   const m = message.toLowerCase()
   if (m.includes('invalid login credentials')) return 'Email ou senha incorretos.'
   if (m.includes('email not confirmed')) {
-    return 'Conta ainda nao confirmada. Confirme em Authentication > Users no Supabase.'
+    return 'Conta ainda não confirmada. Confirme em Authentication > Users no Supabase.'
   }
   if (m.includes('too many requests') || m.includes('rate limit')) {
     return 'Tentativas demais. Espere alguns minutos.'

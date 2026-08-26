@@ -48,7 +48,7 @@ export function ProfilePage() {
 
       <div className="flex flex-col gap-6 boot-up">
         <div>
-          <SectionLabel className="mb-3">Identificacao</SectionLabel>
+          <SectionLabel className="mb-3">Identificação</SectionLabel>
           {/* Form em componente proprio, montado so quando o perfil ja chegou:
               o estado inicial vem direto das props e nao precisa de useEffect
               copiando dado do servidor para o state a cada mudanca. */}
@@ -62,7 +62,7 @@ export function ProfilePage() {
         </div>
 
         <div>
-          <SectionLabel className="mb-3">Aparencia</SectionLabel>
+          <SectionLabel className="mb-3">Aparência</SectionLabel>
           <Panel className="flex flex-col gap-1 p-2">
             <ToggleRow
               icon={Monitor}
@@ -74,7 +74,7 @@ export function ProfilePage() {
             <ToggleRow
               icon={Volume2}
               label="Som"
-              hint="Bipes curtos de confirmacao."
+              hint="Bipes curtos de confirmação."
               checked={sound}
               onChange={toggleSound}
             />
@@ -119,8 +119,8 @@ export function ProfilePage() {
           <SectionLabel className="mb-3">Dados</SectionLabel>
           <Panel className="flex flex-col gap-3 p-5">
             <p className="text-[11px] leading-relaxed text-text-muted">
-              Base protegida por RLS: cada linha e visivel so para o dono, verificado pelo
-              JWT da sessao. O export sai com o que esta em cache nesta janela.
+              Base protegida por RLS: cada linha e visivel só para o dono, verificado pelo
+              JWT da sessão. O export sai com o que esta em cache nesta janela.
             </p>
             <Button variant="outline" size="sm" className="self-start" onClick={exportData}>
               Exportar JSON
@@ -129,7 +129,7 @@ export function ProfilePage() {
         </div>
 
         <div>
-          <SectionLabel className="mb-3">Sessao</SectionLabel>
+          <SectionLabel className="mb-3">Sessão</SectionLabel>
           <Panel className="flex flex-col gap-3 p-5">
             <p className="text-[11px] text-text-muted">
               Conectado como <span className="text-text-primary">{email ?? '—'}</span>
@@ -141,7 +141,7 @@ export function ProfilePage() {
               onClick={() => void supabase.auth.signOut()}
             >
               <LogOut />
-              Encerrar sessao
+              Encerrar sessão
             </Button>
           </Panel>
         </div>
@@ -170,12 +170,12 @@ function IdentityForm({ initialName, initialStartDate, saving, onSave }: Identit
         placeholder="AGENTE"
       />
       <Input
-        label="Inicio da operacao"
+        label="Início da operação"
         type="date"
         value={startDate}
         max={todayKey()}
         onChange={(e) => setStartDate(e.target.value)}
-        hint="Dia zero. Alimenta o contador da home e o streak de contencao quando nao ha recaida registrada."
+        hint="Dia zero. Alimenta o contador da home e o streak de contenção quando não há recaída registrada."
       />
       <Button
         variant="solid"

@@ -12,6 +12,7 @@ import { profileQuery } from '@/features/profile/api/profile-api'
 import { useHabitWindow } from '@/features/checkin/hooks/use-habit-window'
 import { useUpsertHabitLog, useDeleteHabitLog } from '@/features/checkin/api/habit-api'
 import type { HabitLogRow } from '@/shared/types/database.types'
+import { RankPanel } from '@/features/rank/components/RankPanel'
 import { LeonLine } from './LeonLine'
 import { QuoteSlider } from './QuoteSlider'
 import { QuickCheckIn } from './QuickCheckIn'
@@ -85,7 +86,7 @@ export function HomePage() {
             {agent}
           </h1>
           <p className="mt-1 text-[10px] uppercase tracking-[0.2em] text-text-secondary">
-            {fmtInt(daysInOperation)} dias em operacao
+            {fmtInt(daysInOperation)} dias em operação
           </p>
         </header>
 
@@ -100,7 +101,7 @@ export function HomePage() {
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="text-[10px] uppercase tracking-[0.2em] text-text-secondary">
-                    Contencao
+                    Contenção
                   </p>
                   <div className="mt-1 flex items-baseline gap-2">
                     <span className="font-display text-6xl leading-none text-white accent-text">
@@ -135,10 +136,13 @@ export function HomePage() {
 
               <p className="mt-2 text-[10px] text-text-muted">
                 {containment.lastBreak
-                  ? `Ultima recaida registrada em ${fmtDayShort(containment.lastBreak)}.`
-                  : 'Nenhuma recaida registrada ate agora.'}
+                  ? `Última recaída registrada em ${fmtDayShort(containment.lastBreak)}.`
+                  : 'Nenhuma recaída registrada até agora.'}
               </p>
             </Panel>
+
+            {/* Nivel — leva para a tela cheia, onde ficam os requisitos */}
+            <RankPanel />
 
             {/* Transmissao + frases */}
             {/* min-w-0 nos dois: item de grid tem min-width:auto por padrao e
@@ -159,7 +163,7 @@ export function HomePage() {
             {/* Resumo */}
             <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
               <StatCard
-                label="Meditacao 30d"
+                label="Meditação 30d"
                 value={meditationDays}
                 unit="dias"
                 icon={HABITS.meditation.icon}
@@ -168,7 +172,7 @@ export function HomePage() {
               <StatCard
                 label="Leitura 30d"
                 value={fmtInt(readingPages)}
-                unit="paginas"
+                unit="páginas"
                 icon={HABITS.reading.icon}
                 hint={`${readingDays} dias com leitura`}
                 tone={readingPages > 0 ? 'accent' : 'muted'}
@@ -180,15 +184,15 @@ export function HomePage() {
                 icon={HABITS.running.icon}
                 hint={
                   weekKm < WEEKLY_KM_FLOOR
-                    ? `Abaixo do minimo de ${WEEKLY_KM_FLOOR} km`
-                    : 'Minimo cumprido'
+                    ? `Abaixo do mínimo de ${WEEKLY_KM_FLOOR} km`
+                    : 'Mínimo cumprido'
                 }
                 tone={weekKm === 0 ? 'muted' : weekKm < WEEKLY_KM_FLOOR ? 'warn' : 'accent'}
               />
               <StatCard
                 label="Treinos na semana"
                 value={weekTraining}
-                unit="sessoes"
+                unit="sessões"
                 icon={HABITS.training.icon}
                 tone={weekTraining > 0 ? 'accent' : 'muted'}
               />

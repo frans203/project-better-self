@@ -16,7 +16,7 @@ export function getUserId(): string {
   if (!id) {
     // Nao deveria acontecer: RequireSession nao monta as rotas sem sessao.
     // Se acontecer, falhar alto e melhor do que escrever linha orfa.
-    throw new Error('Sem sessao ativa.')
+    throw new Error('Sem sessão ativa.')
   }
   return id
 }

@@ -74,8 +74,8 @@ export function ExerciseDetailPage() {
   return (
     <div className="page-section mx-auto w-full max-w-4xl">
       <PageHeader
-        title={exercise?.name ?? 'Exercicio'}
-        subtitle={`${sessions.length} sessoes registradas`}
+        title={exercise?.name ?? 'Exercício'}
+        subtitle={`${sessions.length} sessões registradas`}
         action={
           <Link
             to="/gym"
@@ -88,33 +88,33 @@ export function ExerciseDetailPage() {
       />
 
       {isPending ? (
-        <Loading label="Lendo historico" />
+        <Loading label="Lendo histórico" />
       ) : sessions.length === 0 ? (
         <EmptyState
           icon={TrendingUp}
-          title="Sem series validas"
-          description="Series marcadas como aquecimento nao entram na progressao."
+          title="Sem séries válidas"
+          description="Séries marcadas como aquecimento não entram na progressão."
         />
       ) : (
         <div className="flex flex-col gap-6 boot-up">
           <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
             <StatCard label="Melhor e1RM" value={fmtNumber(best, 1)} unit="kg" />
-            <StatCard label="Ultima sessao" value={fmtNumber(last, 1)} unit="kg e1RM" />
+            <StatCard label="Última sessão" value={fmtNumber(last, 1)} unit="kg e1RM" />
             <StatCard
-              label="Evolucao"
+              label="Evolução"
               value={`${delta >= 0 ? '+' : ''}${fmtNumber(delta, 1)}`}
               unit="%"
               tone={delta > 0 ? 'ok' : delta < 0 ? 'fail' : 'muted'}
-              hint="Da primeira a ultima sessao"
+              hint="Da primeira a última sessão"
             />
-            <StatCard label="Sessoes" value={sessions.length} unit="registros" />
+            <StatCard label="Sessões" value={sessions.length} unit="registros" />
           </div>
 
-          <SectionLabel>Progressao de carga</SectionLabel>
+          <SectionLabel>Progressão de carga</SectionLabel>
 
           <ChartFrame
-            title="1RM estimado por sessao"
-            hint="Formula de Epley: carga x (1 + reps/30). Compara series de reps diferentes na mesma escala."
+            title="1RM estimado por sessão"
+            hint="Fórmula de Epley: carga x (1 + reps/30). Compara séries de reps diferentes na mesma escala."
             height={240}
           >
             <LineChart data={sessions} margin={{ top: 8, right: 8, left: -12, bottom: 0 }}>
@@ -130,7 +130,7 @@ export function ExerciseDetailPage() {
                     rows={[
                       { label: 'e1RM', value: `${fmtNumber(Number(payload?.[0]?.value ?? 0), 1)} kg` },
                       {
-                        label: 'Melhor serie',
+                        label: 'Melhor série',
                         value: `${fmtNumber(Number(payload?.[0]?.payload?.weight ?? 0), 1)}kg x ${payload?.[0]?.payload?.reps ?? 0}`,
                       },
                     ]}
@@ -149,8 +149,8 @@ export function ExerciseDetailPage() {
           </ChartFrame>
 
           <ChartFrame
-            title="Volume por sessao"
-            hint="Soma de carga x repeticoes das series validas."
+            title="Volume por sessão"
+            hint="Soma de carga x repetições das séries válidas."
             height={200}
           >
             <BarChart data={sessions} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>

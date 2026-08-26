@@ -127,7 +127,7 @@ export function Heatmap({ habit, logs }: HeatmapProps) {
         {habit.abstinence && (
           <>
             <span className="ml-3 heat-cell !w-3 !cursor-default" data-level="fail" />
-            <span>recaida</span>
+            <span>recaída</span>
           </>
         )}
       </div>

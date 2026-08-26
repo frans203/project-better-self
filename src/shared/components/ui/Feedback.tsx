@@ -60,7 +60,7 @@ export function ErrorState({ error, hint }: { error: unknown; hint?: string }) {
       {(hint || missingTable) && (
         <p className="text-[10px] leading-relaxed text-text-muted">
           {hint ??
-            'As tabelas ainda nao existem. Rode supabase/migrations/0001_init.sql no SQL Editor do Supabase — passo 1 do SUPABASE_SETUP.md.'}
+            'As tabelas ainda não existem. Rode supabase/migrations/0001_init.sql no SQL Editor do Supabase — passo 1 do SUPABASE_SETUP.md.'}
         </p>
       )}
     </div>

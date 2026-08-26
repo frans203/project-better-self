@@ -58,7 +58,7 @@ export function fmtDayRelative(key: DayKey) {
   const diff = differenceInCalendarDays(new Date(), fromDayKey(key))
   if (diff === 0) return 'Hoje'
   if (diff === 1) return 'Ontem'
-  if (diff === -1) return 'Amanha'
+  if (diff === -1) return 'Amanhã'
   return fmtDayShort(key)
 }
 

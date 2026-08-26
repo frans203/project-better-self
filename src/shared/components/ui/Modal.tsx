@@ -11,6 +11,20 @@ interface ModalProps {
   children: ReactNode
   footer?: ReactNode
   className?: string
+  /**
+   * Chamado antes de qualquer fechamento (X, ESC, clique no backdrop).
+   * Devolver false cancela o fechamento — use para avisar que ha rascunho
+   * nao salvo. Como `open` e controlado pelo pai, basta nao propagar o
+   * onOpenChange para o modal continuar aberto.
+   */
+  interceptClose?: () => boolean
+  /**
+   * Trava a interacao e mostra o aviso de salvamento. O X continua clicavel
+   * de proposito: quem clica nele durante o save precisa ver o alerta do
+   * interceptClose, nao um botao morto.
+   */
+  busy?: boolean
+  busyLabel?: string
 }
 
 /**
@@ -27,9 +41,17 @@ export function Modal({
   children,
   footer,
   className,
+  interceptClose,
+  busy = false,
+  busyLabel = 'Salvando',
 }: ModalProps) {
+  const handleOpenChange = (next: boolean) => {
+    if (!next && interceptClose && !interceptClose()) return
+    onOpenChange(next)
+  }
+
   return (
-    <Dialog.Root open={open} onOpenChange={onOpenChange}>
+    <Dialog.Root open={open} onOpenChange={handleOpenChange}>
       <Dialog.Portal>
         <Dialog.Backdrop
           className={cn(
@@ -77,6 +99,23 @@ export function Modal({
           {footer && (
             <div className="flex items-center justify-end gap-2 border-t border-border-default px-5 py-4">
               {footer}
+            </div>
+          )}
+
+          {busy && (
+            /*
+              Cobre o corpo mas nao o cabecalho: o X precisa continuar
+              alcancavel para o interceptClose poder avisar.
+            */
+            <div
+              className="absolute inset-x-0 top-[57px] bottom-0 z-10 flex items-center justify-center bg-bg-surface/88 backdrop-blur-[2px]"
+              role="status"
+              aria-live="polite"
+            >
+              <span className="loading-pulse text-[11px] uppercase tracking-[0.2em] text-text-secondary">
+                {busyLabel}
+              </span>
+              <span className="terminal-text" />
             </div>
           )}
         </Dialog.Popup>

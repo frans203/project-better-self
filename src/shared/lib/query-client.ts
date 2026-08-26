@@ -35,6 +35,7 @@ export const queryKeys = {
   runsRange: (from: string, to: string) => ['runs', 'range', from, to] as const,
 
   exercises: ['exercises'] as const,
+  wods: ['wods'] as const,
   workouts: ['workouts'] as const,
   workoutsRange: (from: string, to: string) => ['workouts', 'range', from, to] as const,
   workout: (id: string) => ['workouts', id] as const,

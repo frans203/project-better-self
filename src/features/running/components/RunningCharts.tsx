@@ -49,7 +49,7 @@ export function WeeklyKmChart({ runs }: { runs: RunRow[] }) {
   return (
     <ChartFrame
       title="Km por semana"
-      hint={`A linha marca o piso de ${WEEKLY_KM_FLOOR} km. Semana abaixo dela fica ambar — nao e meta, e o minimo.`}
+      hint={`A linha marca o piso de ${WEEKLY_KM_FLOOR} km. Semana abaixo dela fica ambar — não e meta, e o mínimo.`}
       empty={!hasData}
     >
       <BarChart data={data} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
@@ -62,7 +62,7 @@ export function WeeklyKmChart({ runs }: { runs: RunRow[] }) {
           strokeDasharray="3 3"
           strokeWidth={1}
           label={{
-            value: 'MINIMO',
+            value: 'MÍNIMO',
             position: 'insideTopLeft',
             fill: CHART.warn,
             fontSize: 9,
@@ -76,7 +76,7 @@ export function WeeklyKmChart({ runs }: { runs: RunRow[] }) {
               active={Boolean(active && payload?.length)}
               title={`Semana de ${label}`}
               rows={[
-                { label: 'Distancia', value: `${fmtNumber(Number(payload?.[0]?.value ?? 0), 2)} km` },
+                { label: 'Distância', value: `${fmtNumber(Number(payload?.[0]?.value ?? 0), 2)} km` },
                 {
                   label: 'Piso',
                   value: Number(payload?.[0]?.value ?? 0) >= WEEKLY_KM_FLOOR ? 'cumprido' : 'abaixo',
@@ -115,9 +115,9 @@ export function PaceChart({ runs }: { runs: RunRow[] }) {
       title="Pace"
       // Eixo invertido e contraintuitivo se nao avisar: aqui menor e melhor,
       // entao o eixo cresce pra baixo e a linha sobe quando voce melhora.
-      hint="Minutos por km. O eixo esta invertido: linha subindo significa pace melhor."
+      hint="Minutos por km. O eixo está invertido: linha subindo significa pace melhor."
       empty={data.length < 2}
-      emptyLabel="Registre ao menos duas corridas com duracao"
+      emptyLabel="Registre ao menos duas corridas com duração"
     >
       <LineChart data={data} margin={{ top: 8, right: 8, left: -12, bottom: 0 }}>
         <CartesianGrid {...gridProps} />
@@ -137,7 +137,7 @@ export function PaceChart({ runs }: { runs: RunRow[] }) {
               title={String(label)}
               rows={[
                 { label: 'Pace', value: `${fmtPace(Number(payload?.[0]?.value ?? 0))} /km` },
-                { label: 'Distancia', value: `${fmtNumber(Number(payload?.[0]?.payload?.km ?? 0), 2)} km` },
+                { label: 'Distância', value: `${fmtNumber(Number(payload?.[0]?.payload?.km ?? 0), 2)} km` },
               ]}
             />
           )}

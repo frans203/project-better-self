@@ -52,7 +52,7 @@ supabase/
 - Feature-based. Tudo reutilizavel em `src/shared/`.
 - `queryOptions` factory do TanStack Query v5; chaves centralizadas em `shared/lib/query-client.ts`.
 - Estado de UI em Zustand (`ui-store`), com `persist` no localStorage.
-- **Rotas em ingles, labels em pt-BR.** `/check-in` `/gym` `/running` `/reports` `/profile`.
+- **Rotas em ingles, labels em pt-BR.** `/check-in` `/gym` `/running` `/rank` `/reports` `/profile`.
 
 ### Estilos
 - Tailwind v4 com bloco `@theme` no `index.css` — sem `tailwind.config.js`.
@@ -86,16 +86,32 @@ supabase/
 ## Tabelas
 
 `profiles` · `habit_logs` · `runs` · `exercises` · `workouts` · `workout_sets` · `personal_records`
+`wods` · `wod_results`
 
 - `habit_logs`: uma linha por habito por dia, `unique(user_id, habit_key, log_date)`.
   `value` = minutos | paginas | km conforme o habito.
 - `workout_sets.e1rm`: **coluna gerada** (Epley, `round(peso * (1 + reps/30), 2)`) — banco e a
   fonte da verdade, grafico e deteccao de PR nunca divergem.
 - Triggers: `runs`/`workouts` sincronizam `habit_logs`; `workout_sets` alimenta `personal_records`.
+- `workouts.kind`: 'gym' (tem series) | 'wod' (tem `wod_results`). DEFAULT 'gym' NOT NULL, entao
+  linha gravada antes da 0003 le como 'gym' — nunca undefined. Use `isGymWorkout()`/`setsOf()`/
+  `wodResultOf()` do gym-api em vez de tocar nos campos direto.
+- `wod_results.total_reps`: **coluna gerada** (rounds x reps_per_round + extra_reps). `reps_per_round`
+  e copiado do WOD no registro: editar a definicao depois nao reescreve o placar historico.
+- Nivel (`shared/lib/rank.ts`) e 100% derivado de habit_logs + runs + workout_sets. Nada persistido,
+  entao nao ha migracao nem linha antiga sem valor. So o `celebrated` do ui-store (localStorage)
+  guarda quais requisitos ja renderam confete.
 
 ## Gotchas
 
 - `@import "tailwindcss"` DEVE ser a primeira linha do `index.css`. Reset global dentro de `@layer base`.
+- **Campo com menos de 16px da zoom no iOS.** `.field-input`/`.field-select` sobem para 16px dentro de
+  `@media (pointer: coarse)`. Nao resolver com `maximum-scale=1` no viewport: mata o pinch-zoom.
+- **Nunca animar `width` sobre texto.** Exige `white-space: nowrap`, e ai a frase longa vaza do
+  container (foi o bug do typewriter do LeonLine). Use `transform: scaleX` — e o que o `.req-strike` faz.
+- Rotulo flutuante (`floating` no `Input`) depende de `input:focus + label` no CSS: o `<label>` tem que
+  ser o irmao imediatamente seguinte ao `<input>`. Nao usar com `type="date"` — input de data nunca
+  satisfaz `:placeholder-shown` e o rotulo nasceria em cima do valor.
 - **Datas**: sempre `format(date, 'yyyy-MM-dd')` do date-fns. Nunca `toISOString().slice(0,10)` —
   em Brasilia isso devolve o dia seguinte depois das 21h.
 - **Tipos do banco sao `type`, nunca `interface`.** Interface nao ganha index signature implicita,
@@ -114,6 +130,9 @@ supabase/
 
 ## Estado atual
 
-- **Sem autenticacao** (modo operador unico). RLS ativa com policy permissiva para `anon`.
-  Rodar apenas local. Ver `SUPABASE_SETUP.md` e `PLAN.md` secao 10.1.
+- **Auth ligada.** `0002_enable_auth.sql` ja rodou: `user_id` vem de `auth.uid()`, policy
+  `owner_all` restrita a `authenticated`, e `getUserId()` le a sessao do `auth-store`.
+  Ver `SUPABASE_SETUP.md` e `PLAN.md` secao 10.1.
 - A migracao `0001_init.sql` precisa ser rodada manualmente no SQL Editor do Supabase.
+- **`0003_wods.sql` idem.** Enquanto nao rodar, `workoutsQuery` cai sozinha para a consulta sem
+  WOD (PGRST200) e o resto do app segue funcionando — mas o WOD nao grava.

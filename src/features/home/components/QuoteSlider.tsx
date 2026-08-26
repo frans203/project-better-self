@@ -48,7 +48,7 @@ export function QuoteSlider({ className }: { className?: string }) {
         keyboard={{ enabled: true, onlyInViewport: true }}
         a11y={{
           prevSlideMessage: 'Frase anterior',
-          nextSlideMessage: 'Proxima frase',
+          nextSlideMessage: 'Próxima frase',
           paginationBulletMessage: 'Ir para a frase {{index}}',
         }}
         className="!pb-7"

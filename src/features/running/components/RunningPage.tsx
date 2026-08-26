@@ -81,22 +81,22 @@ export function RunningPage() {
                 </p>
               </div>
               <Badge tone={belowFloor ? 'warn' : 'accent'}>
-                {belowFloor ? 'Abaixo do minimo' : 'Minimo cumprido'}
+                {belowFloor ? 'Abaixo do mínimo' : 'Mínimo cumprido'}
               </Badge>
             </div>
             <Meter value={weekKm} max={Math.max(WEEKLY_KM_FLOOR * 2, weekKm)} floor={WEEKLY_KM_FLOOR} />
             <p className="mt-2 text-[10px] text-text-muted">
-              Piso de {WEEKLY_KM_FLOOR} km por semana. Nao e meta — e a linha abaixo da qual a
-              semana nao conta.
+              Piso de {WEEKLY_KM_FLOOR} km por semana. Não e meta — e a linha abaixo da qual a
+              semana não conta.
             </p>
           </Panel>
 
           <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
             <StatCard label="Total 12m" value={fmtNumber(totalKm, 1)} unit="km" />
             <StatCard label="Dias corridos" value={daysRun} unit="dias" />
-            <StatCard label="Corridas" value={runs.length} unit="sessoes" />
+            <StatCard label="Corridas" value={runs.length} unit="sessões" />
             <StatCard
-              label="Pace medio"
+              label="Pace médio"
               value={avgPace ? fmtPace(avgPace) : '--:--'}
               unit="/km"
               tone={avgPace ? 'accent' : 'muted'}
@@ -109,12 +109,12 @@ export function RunningPage() {
           </div>
 
           <div>
-            <SectionLabel className="mb-3">Historico</SectionLabel>
+            <SectionLabel className="mb-3">Histórico</SectionLabel>
             {runs.length === 0 ? (
               <EmptyState
                 icon={Footprints}
                 title="Nenhuma corrida"
-                description="Registre a primeira e o habito do dia marca sozinho."
+                description="Registre a primeira e o hábito do dia marca sozinho."
                 action={
                   <Button variant="outline" size="sm" onClick={() => setFormOpen(true)}>
                     <Plus />
@@ -188,7 +188,7 @@ export function RunningPage() {
         title="Remover corrida"
         description={
           deleting
-            ? `${fmtNumber(deleting.distance_km, 2)} km em ${fmtDayShort(deleting.run_date)}. Se for a unica corrida do dia, o habito tambem sai do registro.`
+            ? `${fmtNumber(deleting.distance_km, 2)} km em ${fmtDayShort(deleting.run_date)}. Se for a única corrida do dia, o hábito também sai do registro.`
             : undefined
         }
         confirmLabel="Remover"

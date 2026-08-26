@@ -91,7 +91,7 @@ export function ContainmentRow({ log, onSet }: ContainmentRowProps) {
             )}
           >
             <X className="size-4" />
-            Recaida
+            Recaída
           </button>
         </div>
 
@@ -105,8 +105,8 @@ export function ContainmentRow({ log, onSet }: ContainmentRowProps) {
       <ConfirmDialog
         open={confirming}
         onOpenChange={setConfirming}
-        title="Registrar recaida"
-        description="O contador volta pra zero, o historico continua inteiro. Registrar e melhor do que deixar o dia em branco — dado incompleto nao ajuda ninguem."
+        title="Registrar recaída"
+        description="O contador volta pra zero, o histórico continua inteiro. Registrar é melhor do que deixar o dia em branco — dado incompleto não ajuda ninguém."
         confirmLabel="Registrar"
         cancelLabel="Voltar"
         tone="danger"
@@ -117,10 +117,10 @@ export function ContainmentRow({ log, onSet }: ContainmentRowProps) {
       >
         <Input
           label="Gatilho (opcional)"
-          placeholder="tedio, madrugada, briga, sozinho em casa..."
+          placeholder="tédio, madrugada, briga, sozinho em casa..."
           value={trigger}
           onChange={(e) => setTrigger(e.target.value)}
-          hint="Vira estatistica no relatorio. Serve pra achar padrao, nao pra se cobrar."
+          hint="Vira estatística no relatório. Serve pra achar padrão, não pra se cobrar."
         />
       </ConfirmDialog>
     </>

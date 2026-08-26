@@ -41,7 +41,7 @@ export function DayStepper({ value, onChange }: DayStepperProps) {
       <button
         onClick={() => canGoForward && go(nextDay)}
         disabled={!canGoForward}
-        aria-label="Proximo dia"
+        aria-label="Próximo dia"
         className={cn(
           'border border-border-default p-2.5 transition-colors',
           canGoForward

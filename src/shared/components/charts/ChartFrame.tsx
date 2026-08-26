@@ -23,7 +23,7 @@ export function ChartFrame({
   children,
   className,
   empty = false,
-  emptyLabel = 'Sem dados no periodo',
+  emptyLabel = 'Sem dados no período',
 }: ChartFrameProps) {
   return (
     <section className={cn('border border-border-default bg-bg-surface/70 p-4', className)}>

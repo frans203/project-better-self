@@ -7,7 +7,7 @@ export function BottomNav() {
   const { playNav } = useSound()
 
   return (
-    <nav id="bottom-nav" aria-label="Navegacao">
+    <nav id="bottom-nav" aria-label="Navegação">
       {BOTTOM_NAV_ITEMS.map(({ to, label, icon: Icon, end }) => (
         <NavLink
           key={to}

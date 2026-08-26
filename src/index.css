@@ -431,30 +431,55 @@ body {
   z-index: 50;
   padding: 8px 0 calc(8px + env(safe-area-inset-bottom, 0px));
 }
+/*
+   Sao 6 itens. Numa viewport de 320px isso da 53px por item, e a 9px com 1px
+   de tracking "RELATORIO" pedia 58px — estourava. A 8px/0.5px cai para 48px e
+   sobra folga. `min-width: 0` porque item de flex nao encolhe abaixo do
+   conteudo por padrao: sem ele o texto empurra a barra em vez de caber.
+*/
 .bottom-nav-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
   color: var(--text-secondary);
   cursor: pointer;
   border: none;
   background: none;
   font-family: inherit;
-  font-size: 9px;
-  letter-spacing: 1px;
+  font-size: 8px;
+  letter-spacing: 0.5px;
   text-transform: uppercase;
-  padding: 4px 0;
+  padding: 4px 2px;
   flex: 1;
+  min-width: 0;
   text-decoration: none;
   transition: color 0.2s;
+}
+.bottom-nav-item > span {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .bottom-nav-item.active {
   color: var(--accent);
 }
 .bottom-nav-item svg {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
+}
+/*
+   Ate 360px o maior rotulo ("RELATORIO") fica a 1.6px da borda do slot. Zerar
+   o tracking devolve ~5px de folga — o bastante para uma substituicao de fonte
+   nao cortar a palavra.
+*/
+@media (max-width: 360px) {
+  .bottom-nav-item {
+    letter-spacing: 0;
+    padding-left: 1px;
+    padding-right: 1px;
+  }
 }
 
 /* ============================================================
@@ -634,6 +659,8 @@ body {
   color: var(--text-primary);
   font-size: 13px;
   line-height: 1.6;
+  /* Frase do Leon passa de 90 caracteres. Sem isso ela vaza do Panel. */
+  overflow-wrap: anywhere;
 }
 .radio-line::before {
   content: "";
@@ -645,20 +672,17 @@ body {
   background: linear-gradient(to bottom, var(--accent), transparent);
   opacity: 0.6;
 }
-.radio-typing {
-  display: inline-block;
-  overflow: hidden;
-  white-space: nowrap;
-  animation: typewriter 1.6s steps(48, end) forwards;
-  max-width: 100%;
-}
-@keyframes typewriter {
-  from {
-    width: 0;
-  }
-  to {
-    width: 100%;
-  }
+/*
+   O typewriter e feito em JS (LeonLine revela caractere a caractere), nao com
+   animacao de `width` + `white-space: nowrap`. A versao CSS so funcionava em
+   frase de uma linha: qualquer texto que quebrasse era cortado ou vazava do
+   Panel. Aqui sobra so o cursor.
+*/
+.radio-caret::after {
+  content: "\2596";
+  margin-left: 2px;
+  color: var(--accent);
+  animation: blink 1s step-start infinite;
 }
 
 /* ============================================================
@@ -708,6 +732,237 @@ body {
 }
 .field-select:focus {
   border-color: var(--accent);
+}
+
+/* ------------------------------------------------------------
+   FLOATING LABEL
+
+   O rotulo comeca no lugar do placeholder e sobe quando o campo
+   ganha foco ou conteudo. Resolve o campo sem rotulo visivel: ao
+   digitar, o placeholder sumia e nao sobrava pista do que era.
+
+   Nao serve para type="date": input de data nunca satisfaz
+   :placeholder-shown, entao o rotulo nasceria ja em cima do valor.
+   Data continua com o rotulo acima, no FieldShell normal.
+   ------------------------------------------------------------ */
+.field-float {
+  position: relative;
+}
+.field-float > .field-input {
+  /* Espaco no topo para o rotulo pousar. */
+  padding: 19px 14px 7px;
+}
+.field-float > .field-input::placeholder {
+  /* Escondido enquanto o rotulo esta por cima dele. */
+  color: transparent;
+}
+.field-float > .field-input:focus::placeholder {
+  /* Com o rotulo la em cima, o exemplo tem espaco para aparecer. */
+  color: var(--text-muted);
+}
+.field-float > .field-float-label {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 13px;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--text-muted);
+  pointer-events: none;
+  transition:
+    top 0.18s var(--ease),
+    transform 0.18s var(--ease),
+    font-size 0.18s var(--ease),
+    letter-spacing 0.18s var(--ease),
+    color 0.18s;
+  /* O rotulo nunca compete com o valor por espaco. */
+  max-width: calc(100% - 28px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.field-float > .field-input:focus + .field-float-label,
+.field-float > .field-input:not(:placeholder-shown) + .field-float-label {
+  top: 6px;
+  transform: none;
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+.field-float > .field-input:focus + .field-float-label {
+  color: var(--accent);
+}
+/* Sufixo (kg, reps, min) desce junto para nao colidir com o rotulo. */
+.field-float > .field-float-suffix {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-top: 6px;
+  font-size: 10px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+/* ------------------------------------------------------------
+   ANTI-ZOOM NO MOBILE
+
+   Safari no iOS da zoom automatico em qualquer campo com
+   font-size < 16px. Os nossos sao 13px (.field-input) e 11px
+   (.field-select), entao todo toque em input empurrava o layout.
+
+   16px so onde o ponteiro e grosso — no desktop o tamanho
+   continua 13px. Nao usar maximum-scale=1 no <meta viewport>:
+   resolve o mesmo sintoma mas mata o pinch-zoom da pagina toda.
+   ------------------------------------------------------------ */
+@media (pointer: coarse) {
+  .field-input,
+  .field-select,
+  .field-float > .field-float-label {
+    font-size: 16px;
+  }
+  .field-input {
+    padding: 9px 12px;
+  }
+  .field-select {
+    padding: 7px 26px 7px 10px;
+  }
+  .field-float > .field-input {
+    padding: 20px 12px 6px;
+  }
+  .field-float > .field-input:focus + .field-float-label,
+  .field-float > .field-input:not(:placeholder-shown) + .field-float-label {
+    font-size: 10px;
+  }
+}
+
+/* ============================================================
+   NIVEL — insignia, escada e risco de requisito
+   ============================================================ */
+.rank-sigil {
+  color: var(--text-primary);
+}
+.rank-sigil-glow {
+  filter: drop-shadow(0 0 10px var(--accent-glow-soft));
+}
+
+/* Nove entalhes: onde voce esta na escada inteira. */
+.rank-ladder {
+  display: flex;
+  gap: 3px;
+  width: 100%;
+  max-width: 220px;
+}
+.rank-notch {
+  flex: 1;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.12);
+  transition:
+    background 0.3s,
+    box-shadow 0.3s;
+}
+.rank-notch.on {
+  background: rgba(255, 255, 255, 0.5);
+}
+.rank-notch.current {
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent-glow);
+}
+
+/*
+   Risco do requisito cumprido.
+
+   scaleX e nao `width: 0 -> 100%`: animar largura sobre texto obriga a
+   white-space: nowrap, e ai um rotulo longo estoura a linha no mobile — foi
+   exatamente o bug do typewriter antigo. Com transform o texto quebra normal.
+*/
+.req-label {
+  position: relative;
+  display: inline-block;
+  transition: color 0.4s;
+}
+.req-strike {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 52%;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left center;
+}
+/* Ja comemorado numa visita anterior: aparece riscado, sem animar de novo. */
+.req-label.struck .req-strike {
+  transform: scaleX(1);
+}
+.req-label.striking .req-strike {
+  animation: req-strike 450ms var(--ease) 120ms forwards;
+}
+@keyframes req-strike {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .req-label.striking .req-strike {
+    animation: none;
+    transform: scaleX(1);
+  }
+}
+
+/* ============================================================
+   COMBOBOX — sugestao de exercicio / WOD
+   ============================================================ */
+.combo-list {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 2px);
+  left: 0;
+  right: 0;
+  max-height: 208px;
+  overflow-y: auto;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-hover);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.6);
+}
+.combo-option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 9px 12px;
+  font-family: inherit;
+  font-size: 12px;
+  text-align: left;
+  color: var(--text-secondary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+.combo-option.active {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+}
+.combo-create {
+  border-top: 1px solid var(--border-color);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+}
+/* Alvo de toque de 44px no celular. */
+@media (pointer: coarse) {
+  .combo-option {
+    padding: 13px 12px;
+    font-size: 14px;
+  }
 }
 
 /* ============================================================

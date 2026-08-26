@@ -12,6 +12,7 @@ import { fmtInt, fmtNumber } from '@/shared/lib/utils'
 import { useHabitWindow } from '@/features/checkin/hooks/use-habit-window'
 import { profileQuery } from '@/features/profile/api/profile-api'
 import { useQuery } from '@tanstack/react-query'
+import { RankBreakdown } from '@/features/rank/components/RankBreakdown'
 import { Heatmap } from './Heatmap'
 
 const PERIODS = [
@@ -20,7 +21,7 @@ const PERIODS = [
   { value: '365', label: '12 meses' },
 ] as const
 
-const WEEKDAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab']
+const WEEKDAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
 
 export function ReportsPage() {
   const { logs, isPending, isError, error } = useHabitWindow()
@@ -73,16 +74,16 @@ export function ReportsPage() {
 
   return (
     <div className="page-section mx-auto w-full max-w-4xl">
-      <PageHeader title="Relatorio" subtitle={`Ultimos ${windowDays} dias`} />
+      <PageHeader title="Relatório" subtitle={`Últimos ${windowDays} dias`} />
 
       {isError ? (
         <ErrorState error={error} />
       ) : isPending ? (
-        <Loading label="Compilando relatorio" />
+        <Loading label="Compilando relatório" />
       ) : (
         <div className="flex flex-col gap-6 boot-up">
           <Tabs
-            label="Periodo"
+            label="Período"
             value={period}
             onChange={setPeriod}
             items={PERIODS.map((p) => ({ value: p.value, label: p.label }))}
@@ -90,15 +91,15 @@ export function ReportsPage() {
 
           <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
             <StatCard
-              label="Contencao atual"
+              label="Contenção atual"
               value={containment.streak.current}
               unit="dias"
               hint={`Recorde ${containment.streak.best}`}
             />
             <StatCard
-              label="Recaidas"
+              label="Recaídas"
               value={totalRelapses}
-              unit="no periodo"
+              unit="no período"
               tone={totalRelapses === 0 ? 'ok' : 'muted'}
             />
             <StatCard
@@ -114,7 +115,12 @@ export function ReportsPage() {
           </div>
 
           <div>
-            <SectionLabel className="mb-3">Consistencia por habito</SectionLabel>
+            <SectionLabel className="mb-3">Nível</SectionLabel>
+            <RankBreakdown />
+          </div>
+
+          <div>
+            <SectionLabel className="mb-3">Consistência por hábito</SectionLabel>
             <Panel className="flex flex-col gap-4 p-5">
               {rows.map(({ habit, pct, days, total, streak }) => {
                 const Icon = habit.icon
@@ -147,25 +153,25 @@ export function ReportsPage() {
             <SectionLabel className="mb-3">Mapa de calor</SectionLabel>
             <Panel className="p-5">
               <Tabs
-                label="Habito do mapa"
+                label="Hábito do mapa"
                 className="mb-4"
                 value={heatHabit}
                 onChange={setHeatHabit}
                 items={HABIT_LIST.map((h) => ({ value: h.key, label: h.short }))}
               />
               <p className="mb-4 text-[10px] text-text-muted">
-                {HABITS[heatHabit].label} — ultimas 27 semanas. A intensidade acompanha os
-                quartis do seu proprio historico, nao uma escala fixa.
+                {HABITS[heatHabit].label} — últimas 27 semanas. A intensidade acompanha os
+                quartis do seu próprio histórico, não uma escala fixa.
               </p>
               <Heatmap habit={HABITS[heatHabit]} logs={logs} />
             </Panel>
           </div>
 
           <ChartFrame
-            title="Recaidas por dia da semana"
-            hint="Contagem simples do periodo. Serve pra achar padrao de rotina — nao e diagnostico de causa."
+            title="Recaídas por dia da semana"
+            hint="Contagem simples do período. Serve pra achar padrão de rotina — não é diagnóstico de causa."
             empty={totalRelapses === 0}
-            emptyLabel="Nenhuma recaida registrada no periodo"
+            emptyLabel="Nenhuma recaída registrada no período"
             height={200}
           >
             <BarChart data={relapseByWeekday} margin={{ top: 8, right: 8, left: -24, bottom: 0 }}>
@@ -178,7 +184,7 @@ export function ReportsPage() {
                   <ChartTooltipBox
                     active={Boolean(active && payload?.length)}
                     title={String(label)}
-                    rows={[{ label: 'Recaidas', value: String(payload?.[0]?.value ?? 0) }]}
+                    rows={[{ label: 'Recaídas', value: String(payload?.[0]?.value ?? 0) }]}
                   />
                 )}
               />

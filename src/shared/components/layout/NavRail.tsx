@@ -21,7 +21,7 @@ export function NavRail() {
   const { crt, sound, toggleCrt, toggleSound } = useUiStore()
 
   return (
-    <aside id="rail" aria-label="Navegacao principal">
+    <aside id="rail" aria-label="Navegação principal">
       <div className="mb-8 flex h-10 w-full items-center gap-3 pl-[15px]">
         <GlitchLogo text="OBS" className="shrink-0 text-lg text-white" />
         <span className="logo-text text-[9px] leading-tight tracking-[0.18em] text-text-secondary">

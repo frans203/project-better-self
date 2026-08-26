@@ -61,16 +61,62 @@ export type ExerciseRow = {
   created_at: string
 }
 
+export type WorkoutKind = 'gym' | 'wod'
+
 export type WorkoutRow = {
   id: string
   user_id: string
   workout_date: string
+  /**
+   * 'gym' = musculacao (tem workout_sets). 'wod' = CrossFit (tem wod_result).
+   * Coluna com DEFAULT 'gym' NOT NULL: linha gravada antes da 0003 le como
+   * 'gym', nunca undefined.
+   */
+  kind: WorkoutKind
   split: string | null
   duration_min: number | null
   rpe: number | null
   note: string | null
   created_at: string
   updated_at: string
+}
+
+export type WodScoring = 'amrap' | 'for_time' | 'emom' | 'rounds' | 'other'
+
+/** Um movimento do WOD: 5 barra fixa, 10 flexao, 15 agachamento. */
+export type WodMovement = {
+  name: string
+  reps: number
+}
+
+export type WodRow = {
+  id: string
+  user_id: string
+  name: string
+  scoring: WodScoring
+  time_cap_min: number | null
+  reps_per_round: number | null
+  /** jsonb no banco. Sempre array — a coluna tem DEFAULT '[]'. */
+  movements: WodMovement[]
+  description: string | null
+  is_benchmark: boolean
+  created_at: string
+}
+
+export type WodResultRow = {
+  id: string
+  user_id: string
+  workout_id: string
+  wod_id: string
+  rounds: number | null
+  extra_reps: number | null
+  duration_sec: number | null
+  reps_per_round: number | null
+  scaled: boolean
+  note: string | null
+  /** Coluna gerada no banco. Somente leitura - nunca vai em Insert. */
+  total_reps: number
+  created_at: string
 }
 
 export type WorkoutSetRow = {
@@ -205,6 +251,7 @@ export type Database = {
           id?: string
           user_id?: string
           workout_date: string
+          kind?: WorkoutKind
           split?: string | null
           duration_min?: number | null
           rpe?: number | null
@@ -216,6 +263,7 @@ export type Database = {
           id?: string
           user_id?: string
           workout_date?: string
+          kind?: WorkoutKind
           split?: string | null
           duration_min?: number | null
           rpe?: number | null
@@ -275,6 +323,65 @@ export type Database = {
           weight_kg?: number
           reps?: number
           e1rm?: number
+          created_at?: string
+        }
+        Relationships: []
+      }
+      wods: {
+        Row: WodRow
+        Insert: {
+          id?: string
+          user_id?: string
+          name: string
+          scoring?: WodScoring
+          time_cap_min?: number | null
+          reps_per_round?: number | null
+          movements?: WodMovement[]
+          description?: string | null
+          is_benchmark?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          name?: string
+          scoring?: WodScoring
+          time_cap_min?: number | null
+          reps_per_round?: number | null
+          movements?: WodMovement[]
+          description?: string | null
+          is_benchmark?: boolean
+          created_at?: string
+        }
+        Relationships: []
+      }
+      wod_results: {
+        Row: WodResultRow
+        // total_reps e coluna gerada: fica fora de Insert/Update de proposito.
+        Insert: {
+          id?: string
+          user_id?: string
+          workout_id: string
+          wod_id: string
+          rounds?: number | null
+          extra_reps?: number | null
+          duration_sec?: number | null
+          reps_per_round?: number | null
+          scaled?: boolean
+          note?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          workout_id?: string
+          wod_id?: string
+          rounds?: number | null
+          extra_reps?: number | null
+          duration_sec?: number | null
+          reps_per_round?: number | null
+          scaled?: boolean
+          note?: string | null
           created_at?: string
         }
         Relationships: []

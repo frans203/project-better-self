@@ -5,14 +5,53 @@ import { getUserId } from '@/shared/lib/user'
 import type {
   ExerciseRow,
   PersonalRecordRow,
+  WodResultRow,
+  WodRow,
+  WorkoutKind,
   WorkoutRow,
   WorkoutSetRow,
 } from '@/shared/types/database.types'
 import type { DayKey } from '@/shared/lib/date'
 import { showSnack } from '@/shared/components/ui'
 
+export type WodResultWithWod = WodResultRow & {
+  wods: Pick<WodRow, 'name' | 'scoring' | 'time_cap_min'> | null
+}
+
 export interface WorkoutWithSets extends WorkoutRow {
   workout_sets: WorkoutSetRow[]
+  /** Presente so quando kind = 'wod'. Normalizado por `wodResultOf`. */
+  wod_results?: WodResultWithWod | WodResultWithWod[] | null
+}
+
+/**
+ * Series validas de um treino, tolerante a linha antiga.
+ *
+ * Treino de WOD nao tem workout_sets, e o PostgREST devolve o campo ausente
+ * em vez de array vazio quando o embed nao casa. Todo consumidor passa por
+ * aqui para nunca chamar .filter em undefined.
+ */
+export function setsOf(w: Pick<WorkoutWithSets, 'workout_sets'>): WorkoutSetRow[] {
+  return w.workout_sets ?? []
+}
+
+/**
+ * O resultado do WOD, venha ele como objeto ou como array.
+ *
+ * `wod_results.workout_id` e UNIQUE, entao o PostgREST costuma detectar
+ * one-to-one e devolver objeto — mas isso mudou entre versoes e volta a ser
+ * array dependendo do plano. Normalizar aqui evita a tela quebrar quando o
+ * formato troca.
+ */
+export function wodResultOf(w: WorkoutWithSets): WodResultWithWod | null {
+  const r = w.wod_results
+  if (!r) return null
+  return Array.isArray(r) ? (r[0] ?? null) : r
+}
+
+/** Treino de academia = tem serie. Dado gravado antes da 0003 le como 'gym'. */
+export function isGymWorkout(w: Pick<WorkoutRow, 'kind'>): boolean {
+  return (w.kind ?? 'gym') === 'gym'
 }
 
 export const exercisesQuery = () =>
@@ -34,15 +73,40 @@ export const workoutsQuery = (from: DayKey, to: DayKey) =>
   queryOptions({
     queryKey: queryKeys.workoutsRange(from, to),
     queryFn: async (): Promise<WorkoutWithSets[]> => {
+      const base = () =>
+        supabase
+          .from('workouts')
+          .select('*, workout_sets(*)')
+          .eq('user_id', getUserId())
+          .gte('workout_date', from)
+          .lte('workout_date', to)
+          .order('workout_date', { ascending: false })
+
+      // wod_results vem junto para a lista de sessoes conseguir resumir um WOD
+      // sem uma segunda ida ao banco. Treino de academia devolve null.
       const { data, error } = await supabase
         .from('workouts')
-        .select('*, workout_sets(*)')
+        .select('*, workout_sets(*), wod_results(*, wods(name, scoring, time_cap_min))')
         .eq('user_id', getUserId())
         .gte('workout_date', from)
         .lte('workout_date', to)
         .order('workout_date', { ascending: false })
 
-      if (error) throw error
+      if (error) {
+        /*
+          Antes da 0003 rodar, `wod_results` nao existe e o PostgREST recusa o
+          embed inteiro (PGRST200) — o que derrubaria academia, home e nivel de
+          uma vez. Cair para a consulta sem WOD mantem tudo que ja existia
+          funcionando, e o WOD aparece sozinho assim que a migracao rodar.
+        */
+        const missingRelation = error.code === 'PGRST200' || error.code === '42P01'
+        if (!missingRelation) throw error
+
+        const fallback = await base()
+        if (fallback.error) throw fallback.error
+        return (fallback.data ?? []) as unknown as WorkoutWithSets[]
+      }
+
       return (data ?? []) as unknown as WorkoutWithSets[]
     },
   })
@@ -112,11 +176,49 @@ export interface SetInput {
 
 export interface WorkoutInput {
   workout_date: DayKey
+  kind?: WorkoutKind
   split?: string | null
   duration_min?: number | null
   rpe?: number | null
   note?: string | null
   sets: SetInput[]
+}
+
+/**
+ * Garante que todo nome da lista tenha um exercicio no banco, e devolve o
+ * mapa nome-normalizado -> id.
+ *
+ * Os que faltam sao criados em paralelo. Antes isso era um `await` por
+ * exercicio dentro de um for, entao um treino com seis exercicios novos
+ * custava seis viagens em fila antes de o treino comecar a ser gravado —
+ * era boa parte da demora que fazia o modal parecer travado.
+ */
+export function useResolveExercises() {
+  const qc = useQueryClient()
+
+  return async (names: string[], known: Map<string, string>): Promise<Map<string, string>> => {
+    const resolved = new Map(known)
+    const missing = [...new Set(names.map((n) => n.trim()).filter(Boolean))].filter(
+      (n) => !resolved.has(n.toLowerCase()),
+    )
+    if (missing.length === 0) return resolved
+
+    const created = await Promise.all(
+      missing.map(async (name) => {
+        const { data, error } = await supabase
+          .from('exercises')
+          .insert({ user_id: getUserId(), name, muscle_group: null })
+          .select()
+          .single()
+        if (error) throw error
+        return data
+      }),
+    )
+    for (const ex of created) resolved.set(ex.name.trim().toLowerCase(), ex.id)
+
+    void qc.invalidateQueries({ queryKey: queryKeys.exercises })
+    return resolved
+  }
 }
 
 /**
@@ -188,6 +290,56 @@ export function e1rm(weightKg: number, reps: number): number {
   return Math.round(weightKg * (1 + reps / 30) * 100) / 100
 }
 
-export function volumeOf(sets: WorkoutSetRow[]): number {
-  return sets.filter((s) => !s.is_warmup).reduce((acc, s) => acc + s.weight_kg * s.reps, 0)
+export function volumeOf(sets: WorkoutSetRow[] | undefined | null): number {
+  return (sets ?? [])
+    .filter((s) => !s.is_warmup)
+    .reduce((acc, s) => acc + s.weight_kg * s.reps, 0)
+}
+
+/** Repeticoes validas somadas. Alimenta o requisito de reps do ranking. */
+export function repsOf(sets: WorkoutSetRow[] | undefined | null): number {
+  return (sets ?? []).filter((s) => !s.is_warmup).reduce((acc, s) => acc + s.reps, 0)
+}
+
+/**
+ * Agrupa series consecutivas identicas: 4 linhas de 60kg x 10 viram
+ * "4 x 10 x 60kg". Base tanto da lista de sessoes quanto do modo bloco do
+ * formulario.
+ *
+ * Consecutivas, nao todas: 3x10 seguidas de 2x8 e depois mais 1x10 no mesmo
+ * exercicio sao tres blocos, na ordem em que foram feitos. Agrupar tudo por
+ * (peso, reps) embaralharia a ordem de uma piramide.
+ */
+export interface SetGroup {
+  exercise_id: string
+  weight_kg: number
+  reps: number
+  is_warmup: boolean
+  count: number
+}
+
+export function groupSets(sets: WorkoutSetRow[] | undefined | null): SetGroup[] {
+  const ordered = [...(sets ?? [])].sort((a, b) => a.set_index - b.set_index)
+  const out: SetGroup[] = []
+  for (const s of ordered) {
+    const last = out[out.length - 1]
+    if (
+      last &&
+      last.exercise_id === s.exercise_id &&
+      last.weight_kg === s.weight_kg &&
+      last.reps === s.reps &&
+      last.is_warmup === s.is_warmup
+    ) {
+      last.count++
+    } else {
+      out.push({
+        exercise_id: s.exercise_id,
+        weight_kg: s.weight_kg,
+        reps: s.reps,
+        is_warmup: s.is_warmup,
+        count: 1,
+      })
+    }
+  }
+  return out
 }

@@ -1,4 +1,4 @@
-import { BarChart3, Dumbbell, Footprints, LayoutGrid, SquareCheck, User } from 'lucide-react'
+import { BarChart3, Dumbbell, Footprints, LayoutGrid, Medal, SquareCheck, User } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
 export interface NavItem {
@@ -16,7 +16,8 @@ export const NAV_ITEMS: NavItem[] = [
   { to: '/check-in', label: 'Check-in', icon: SquareCheck, inBottomNav: true },
   { to: '/gym', label: 'Academia', icon: Dumbbell, inBottomNav: true },
   { to: '/running', label: 'Corrida', icon: Footprints, inBottomNav: true },
-  { to: '/reports', label: 'Relatorio', icon: BarChart3, inBottomNav: true },
+  { to: '/rank', label: 'Nível', icon: Medal, inBottomNav: true },
+  { to: '/reports', label: 'Relatório', icon: BarChart3, inBottomNav: true },
   { to: '/profile', label: 'Perfil', icon: User, inBottomNav: false },
 ]
 

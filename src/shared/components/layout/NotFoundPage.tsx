@@ -6,7 +6,7 @@ export function NotFoundPage() {
     <div className="page-section flex min-h-[70vh] flex-col items-center justify-center gap-5 text-center">
       <p className="font-display text-5xl text-white">404</p>
       <p className="text-[11px] uppercase tracking-[0.2em] text-text-muted terminal-text">
-        Setor nao mapeado
+        Setor não mapeado
       </p>
       <Link to="/">
         <Button variant="outline" size="sm">

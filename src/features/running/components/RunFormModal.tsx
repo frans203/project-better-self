@@ -13,7 +13,7 @@ interface RunFormModalProps {
 }
 
 const FEELINGS = [
-  { value: '', label: 'Nao informado' },
+  { value: '', label: 'Não informado' },
   { value: '1', label: '1 — arrastado' },
   { value: '2', label: '2 — pesado' },
   { value: '3', label: '3 — normal' },
@@ -27,7 +27,7 @@ export function RunFormModal({ open, onOpenChange, run }: RunFormModalProps) {
       open={open}
       onOpenChange={onOpenChange}
       title={run ? 'Editar corrida' : 'Registrar corrida'}
-      description="O habito 'Corrida' do dia e marcado automaticamente."
+      description="O hábito 'Corrida' do dia é marcado automaticamente."
       footer={null}
     >
       {/*
@@ -60,7 +60,7 @@ function RunForm({ run, onDone }: { run: RunRow | null; onDone: () => void }) {
 
   const submit = async () => {
     if (!Number.isFinite(km) || km <= 0) {
-      setError('Informe a distancia em km.')
+      setError('Informe a distância em km.')
       return
     }
 
@@ -91,7 +91,7 @@ function RunForm({ run, onDone }: { run: RunRow | null; onDone: () => void }) {
 
       <div className="grid grid-cols-2 gap-3">
         <Input
-          label="Distancia"
+          label="Distância"
           type="number"
           inputMode="decimal"
           step="0.01"
@@ -103,7 +103,7 @@ function RunForm({ run, onDone }: { run: RunRow | null; onDone: () => void }) {
           error={error ?? undefined}
         />
         <Input
-          label="Duracao"
+          label="Duração"
           type="number"
           inputMode="numeric"
           min={0}
@@ -123,7 +123,7 @@ function RunForm({ run, onDone }: { run: RunRow | null; onDone: () => void }) {
       />
 
       <Select
-        label="Sensacao"
+        label="Sensação"
         options={FEELINGS}
         value={feeling}
         onChange={(e) => setFeeling(e.target.value)}
