@@ -2,7 +2,9 @@ import { queryOptions, useMutation, useQueryClient } from '@tanstack/react-query
 import { supabase } from '@/shared/lib/supabase'
 import { queryKeys, queryClient } from '@/shared/lib/query-client'
 import { getUserId } from '@/shared/lib/user'
-import type { ProfileRow } from '@/shared/types/database.types'
+import type { Database, ProfileRow } from '@/shared/types/database.types'
+
+type ProfileUpdate = Database['public']['Tables']['profiles']['Update']
 import { showSnack } from '@/shared/components/ui'
 
 export const profileQuery = () =>
@@ -38,7 +40,9 @@ export function useUpdateProfile() {
   const qc = useQueryClient()
 
   return useMutation({
-    mutationFn: async (patch: Partial<ProfileRow>) => {
+    // Tipo de Update, nao Partial<ProfileRow>: arquetipo e alistamento ficam de fora
+    // e so mudam por rpc('choose_archetype') — o banco recusaria de qualquer jeito.
+    mutationFn: async (patch: ProfileUpdate) => {
       const { data, error } = await supabase
         .from('profiles')
         .update(patch)

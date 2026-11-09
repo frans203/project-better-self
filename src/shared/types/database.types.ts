@@ -17,6 +17,9 @@ export type Json = string | number | boolean | null | { [key: string]: Json | un
 
 export type HabitKeyDb = 'no_pmo' | 'meditation' | 'reading' | 'running' | 'training'
 
+/** Dominio `public.archetype_codename` (0004). Mesma lista de ARCHETYPE_CODENAMES em contracts/api.ts. */
+export type ArchetypeCodenameDb = 'operador' | 'espartano' | 'sobrevivente' | 'cacador' | 'herdeiro'
+
 export type ProfileRow = {
   id: string
   display_name: string | null
@@ -25,6 +28,14 @@ export type ProfileRow = {
   settings: Json
   created_at: string
   updated_at: string
+  /**
+   * 0004. As tres colunas abaixo sao SO LEITURA para o front: o trigger
+   * profiles_protect_billing recusa insert/update direto. Escrita = rpc('choose_archetype').
+   * Por isso nao aparecem em Insert/Update. Antes de rodar a 0004 elas vem undefined.
+   */
+  archetype_codename: ArchetypeCodenameDb | null
+  trial_ends_at: string | null
+  archetype_switch_used: boolean
 }
 
 export type HabitLogRow = {
@@ -388,7 +399,17 @@ export type Database = {
       }
     }
     Views: Record<string, never>
-    Functions: Record<string, never>
+    /*
+     * Tabelas de billing da 0004 (plans, subscriptions, checkouts, entitlements,
+     * payment_events) ficam FORA deste tipo de proposito: o front so fala com elas
+     * pela API (contracts/api.ts), nunca por supabase.from().
+     */
+    Functions: {
+      choose_archetype: {
+        Args: { p_codename: ArchetypeCodenameDb }
+        Returns: ProfileRow
+      }
+    }
     Enums: Record<string, never>
     CompositeTypes: Record<string, never>
   }

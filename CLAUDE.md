@@ -103,6 +103,7 @@ supabase/
 
 `profiles` · `habit_logs` · `runs` · `exercises` · `workouts` · `workout_sets` · `personal_records`
 `wods` · `wod_results`
+Billing (0004): `plans` · `subscriptions` · `checkouts` · `entitlements` · `payment_events`
 
 - `habit_logs`: uma linha por habito por dia, `unique(user_id, habit_key, log_date)`.
   `value` = minutos | paginas | km conforme o habito.
@@ -127,6 +128,20 @@ supabase/
 - A regua de `reps` esta calibrada no treino real do operador (~4 series de ~4 reps = ~17/sessao),
   nao num treino generico de 10-12 reps. A coluna `wod` comeca em 0 no BRONZE de proposito: da pra
   subir o primeiro nivel so levantando peso, e condicionamento so vira requisito de PRATA pra cima.
+- **`profiles.archetype_codename` / `trial_ends_at` / `archetype_switch_used` sao so leitura para o
+  front.** O trigger `profiles_protect_billing` recusa (42501) insert/update direto por
+  anon/authenticated — senao um PATCH no PostgREST esticava o proprio trial. Escrita so por
+  `supabase.rpc('choose_archetype', { p_codename })` (SECURITY DEFINER: primeira escolha abre 7 dias,
+  uma troca no alistamento, troca livre com `archetype:*`) ou pela API. Por isso as tres ficam fora
+  do `Insert`/`Update` em `database.types.ts`.
+- **Tabelas de billing: o front so le, e so pela API.** Escrita e exclusiva da service role
+  (revoke + RLS so com policy de select). Elas nem estao no `Database` do front. O vocabulario
+  (codinomes, `plan_id`, chaves `feature:*`/`archetype:*`) e o de `contracts/api.ts`; o codinome e o
+  dominio `public.archetype_codename` — adicionar arquetipo = alterar o dominio E o contrato.
+- `entitlements` guarda so direito pago/concedido. Arquetipo escolhido e trial **nao** viram linha:
+  a API deriva os dois de `profiles` ao montar `GET /me/entitlements`.
+- `payment_events.unique(provider, provider_event_id)` e a idempotencia do webhook: reenvio do
+  gateway bate no unique e e ignorado.
 
 ## Gotchas
 
@@ -162,3 +177,8 @@ supabase/
 - A migracao `0001_init.sql` precisa ser rodada manualmente no SQL Editor do Supabase.
 - **`0003_wods.sql` idem.** Enquanto nao rodar, `workoutsQuery` cai sozinha para a consulta sem
   WOD (PGRST200) e o resto do app segue funcionando — mas o WOD nao grava.
+- **`0004_billing.sql` e rascunho: NAO rodar** antes de revisada pelos dois (SAAS_PLAN §10.2-A).
+  O front de hoje nao le nada dela, entao o app funciona igual com ou sem ela.
+- **Gotcha de CHECK com NULL:** `check (a or id = 'x' || col)` com `col` nulo avalia NULL, e CHECK
+  que da NULL **passa**. Cada ramo precisa do `is null`/`is not null` explicito (foi o bug do
+  `plans_archetype_matches_id`, pego no teste antes de subir).
