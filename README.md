@@ -7,6 +7,18 @@ Registra e acompanha: **contencao** (sem pornografia/masturbacao), **meditacao**
 
 ---
 
+## Para quem e
+
+O **"nerd forte"**: gamer/geek/otaku, 18–35 anos, que treina (ou quer treinar) musculacao de
+verdade e encara a propria evolucao como a build de um personagem. Entende nivel, rank, grind e
+streak; quer disciplina completa (forca, corrida, leitura, meditacao, contencao), nao so treino;
+rejeita a estetica fitness generica. Brasileiro, paga em PIX.
+
+O produto esta caminhando para SaaS com planos por **arquetipo** (classes originais de personagem)
+e freemium — plano completo em [`SAAS_PLAN.md`](./SAAS_PLAN.md).
+
+---
+
 ## Comecando
 
 ```bash

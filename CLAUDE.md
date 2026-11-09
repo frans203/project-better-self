@@ -8,6 +8,22 @@ Referencia visual: `../ultimate-backlog` — mesma linguagem grafica, accent ver
 
 Rastreia: contencao (no-PMO), meditacao, leitura, corrida e treino de academia.
 
+## Publico-alvo
+
+O **"nerd forte"**: gamer/geek/otaku, 18–35 anos, que treina musculacao de verdade e trata a
+propria evolucao como build de personagem (nivel, rank, grind, streak). Quer disciplina completa,
+nao so treino. Rejeita estetica fitness generica. Brasileiro, paga em PIX.
+
+- **Tom de copy:** seco, militar, terminal. Sem "parabens!!", sem coach motivacional, sem emoji.
+  Honesto: dia sem registro nao e falha, rank pode cair, frase nao ganha autor inventado.
+- **Rumo a SaaS** — planos por arquetipo + freemium + API NestJS com adapters. Tudo em
+  `SAAS_PLAN.md`. **Nada disso esta implementado ainda.**
+- **IP de personagens: risco assumido na fase de tracao** (ver `SAAS_PLAN.md` §0). Arquetipos tem
+  `codename` original (permanente — unico nome que codigo, banco e gateway conhecem) e
+  `showcaseName` de personagem (Kratos, Joel, Chris, Dante, Nero — temporario, so na UI/landing).
+  Nunca arte oficial (so fan art), nunca nome de personagem no checkout/nota/`plan_id`, nunca
+  frase literal de jogo no produto pago. Trocar a vitrine tem que continuar sendo uma linha.
+
 ## Comandos
 
 ```bash
