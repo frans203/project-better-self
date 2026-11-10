@@ -770,8 +770,57 @@ pela API real), semana 6 (pagamento de verdade, ponta a ponta, em ambiente de te
 
 ---
 
+## 10.3 Revisão dos PRs do bloco A (10/11/2026)
+
+A divisão do §10.2 continua: **a API NestJS (bloco C, H1–H8) fica com o Henrique.** Esta seção
+registra o que acontece com os dois primeiros PRs dele.
+
+### Decisão por PR
+
+| PR | Decisão | Por quê |
+|---|---|---|
+| **#2** — contrato da API (`contracts/api.ts`) | **Merge.** | Não é só referência: é o arquivo que o `api/` e o front vão importar. Nenhuma tela do app usa ainda, então o app não muda. Ajustes futuros entram como PR no contrato (§10.2-E). Ficam como estão: `returnUrl` fora do checkout, preço vindo da tabela `plans`, `cosmetic.founder` fora do `feature:*`. |
+| **#3** — migração `0004_billing.sql` | **Referência, fora de `supabase/migrations/`.** O SQL vai para `docs/reference/0004_billing.draft.sql`, sem as mudanças em `CLAUDE.md` e `database.types.ts`, e o PR é fechado. | Ver abaixo. |
+
+**Por que o #3 não entra como está:**
+
+- **`supabase/migrations/` é a pasta do que deve ser rodado.** O `CLAUDE.md` manda rodar no SQL
+  Editor o que estiver ali, e o banco é compartilhado com o app publicado. Um rascunho nessa
+  pasta acaba rodado por alguém, pessoa ou agente.
+- **O PR muda `CLAUDE.md` e `database.types.ts` como se as tabelas já existissem.** A
+  documentação passaria a descrever um banco que não existe.
+- **Ele fecha decisões de arquitetura antes da API existir:**
+  - `choose_archetype` com SECURITY DEFINER deixa o front gravar arquétipo e trial direto no
+    Supabase, sem passar pela API. Isso precisa ser decidido junto com o desenho do Nest:
+    toda escrita de billing e trial pela API, ou essa exceção para o onboarding (F3) não esperar.
+  - Se o adapter for Drizzle (§11), as migrações podem passar a ser geradas pelo `api/`, e uma
+    0004 escrita à mão entraria em conflito.
+  - `on delete cascade` em `subscriptions`/`checkouts`: falta confirmar se existe obrigação
+    fiscal de guardar o histórico de cobrança depois que a conta é apagada.
+
+**O que o #3 deixa de base para o H1/H4**, e deve ser mantido quando o schema for refeito
+junto com o `api/`:
+- gatilho `profiles_protect_billing`: o usuário não consegue esticar o próprio trial com um
+  PATCH direto (a policy `owner_all` permitiria);
+- billing só leitura para o usuário, `payment_events` fechada, só a API escreve (chave de serviço);
+- `unique(provider, provider_event_id)` (webhook reenviado não é processado duas vezes), uma
+  assinatura ativa por usuário, grant não duplicado;
+- `plan_id` só aceita codinome (guardrail do §0), e o CHECK que trata NULL (o bug que os testes
+  pegaram: `archetype_kratos` passava com codinome nulo);
+- trial e arquétipo escolhido calculados de `profiles`, não gravados em `entitlements`;
+- os 35 casos testados no PGlite viram a lista de testes da migração final. Vale trazer o
+  script de teste para o repo junto com o `api/` (H1).
+
+**Próximo passo:** o schema de billing volta como migração real dentro do H1/H4, depois de
+decidir o adapter (Kysely ou Drizzle) e o `choose_archetype`, e com a revisão dos dois antes
+de rodar (§10.2-A).
+
+---
+
 ## 11. Decisões em aberto
 
+- `choose_archetype` direto no Supabase ou toda escrita de arquétipo/trial pela API? (§10.3)
+- Histórico de cobrança: apagar junto com a conta (`cascade`) ou guardar (`set null`) por obrigação fiscal?
 - Codinomes finais e artista dos arquétipos.
 - Landing em `/` com app em `/app/*`, ou landing condicional em `/`?
 - Checkout hospedado (rápido) ou PIX transparente dentro do terminal (mais bonito) no MVP?
