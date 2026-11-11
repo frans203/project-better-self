@@ -1525,6 +1525,454 @@ body.crt-off #crt-vignette {
 }
 
 /* ============================================================
+   LANDING — pagina publica (features/landing)
+   ============================================================ */
+/*
+   A landing nao usa o wallpaper: a arte atual e oficial (guardrail do
+   SAAS_PLAN §0). O fundo e uma grade fina que some para baixo, e o CRT da
+   landing e proprio — o do app nasce desligado (body.crt-off) e respeita a
+   preferencia do operador, mas a landing E a demo, entao mostra sempre.
+*/
+.landing {
+  position: relative;
+  min-height: 100dvh;
+  background: var(--bg-base);
+  isolation: isolate;
+}
+.landing-grid {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: linear-gradient(to bottom, #000 0, rgba(0, 0, 0, 0.5) 900px, transparent 1800px);
+}
+.landing-crt {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.5) 100%),
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0px,
+      transparent 3px,
+      rgba(0, 0, 0, 0.18) 3px,
+      rgba(0, 0, 0, 0.18) 4px
+    );
+}
+
+/*
+   Hero com video de fundo. O veu e quase transparente (pedido: o video tem
+   que aparecer). A legibilidade vem de tres coisas baratas: text-shadow no
+   texto, um escurecimento leve so do lado do texto, e o fade para o bg-base
+   na base, que costura o hero com a secao seguinte.
+*/
+.landing-hero {
+  --hero-veil: 0.12;
+  position: relative;
+  display: flex;
+  min-height: calc(100svh - 3.5rem);
+  flex-direction: column;
+  justify-content: center;
+  padding-block: 4rem;
+  overflow: hidden;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85), 0 0 18px rgba(0, 0, 0, 0.6);
+}
+.landing-hero-bg {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+}
+.landing-hero-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.landing-hero-veil {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to bottom, transparent 55%, var(--bg-base) 100%),
+    linear-gradient(to right, rgba(10, 10, 10, 0.45) 0%, transparent 65%),
+    rgba(10, 10, 10, var(--hero-veil));
+}
+/* Celular: o texto ocupa a largura toda, entao o escurecimento lateral vira
+   vertical e um pouco mais forte embaixo, onde ficam os botoes. */
+@media (max-width: 768px) {
+  .landing-hero-veil {
+    background:
+      linear-gradient(to bottom, rgba(10, 10, 10, 0.2) 0%, rgba(10, 10, 10, 0.35) 60%, var(--bg-base) 100%),
+      rgba(10, 10, 10, var(--hero-veil));
+  }
+}
+
+/*
+   Secao com video de fundo (a escada). A secao vive dentro do container de
+   max-w-5xl; o fundo sangra ate a borda da tela com o truque do 50vw (o body
+   ja tem overflow-x: hidden, entao nao gera scroll lateral). Veu mais forte
+   que o do hero: aqui tem painel e tabela por cima, nao so titulo. Topo e
+   base afundam no bg-base para costurar com as secoes vizinhas.
+*/
+.landing-section-backdrop {
+  --section-veil: 0.5;
+  position: relative;
+  isolation: isolate;
+}
+.landing-section-bg {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 100vw;
+  transform: translateX(-50%);
+  z-index: -1;
+  overflow: hidden;
+}
+.landing-section-veil {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to bottom, var(--bg-base) 0%, transparent 18%, transparent 82%, var(--bg-base) 100%),
+    rgba(10, 10, 10, var(--section-veil));
+}
+
+.landing-h1 {
+  font-family: var(--font-display);
+  font-size: clamp(2.6rem, 11vw, 6.5rem);
+  line-height: 0.95;
+  text-transform: uppercase;
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+.landing-h2 {
+  font-family: var(--font-display);
+  font-size: clamp(1.9rem, 6.5vw, 3.4rem);
+  line-height: 1;
+  text-transform: uppercase;
+  color: #fff;
+  overflow-wrap: anywhere;
+}
+.landing-lead {
+  margin-top: 1.25rem;
+  max-width: 42rem;
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text-secondary);
+}
+
+/*
+   Arte do arquetipo (F2). 4:3 no celular; no desktop a linha manda na altura
+   e a arte preenche (min-height evita linha baixa demais com texto curto).
+   Ate a arte chegar: moldura tracejada + numero.
+*/
+.landing-art,
+.landing-art-media {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  background-color: var(--bg-elevated);
+}
+@media (min-width: 768px) {
+  .landing-art,
+  .landing-art-media {
+    height: 100%;
+    min-height: 340px;
+    aspect-ratio: auto;
+  }
+}
+.landing-art {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  outline: 1px dashed rgba(255, 255, 255, 0.14);
+  outline-offset: -12px;
+  background:
+    repeating-linear-gradient(
+      135deg,
+      transparent 0 10px,
+      rgba(255, 255, 255, 0.025) 10px 11px
+    ),
+    var(--bg-elevated);
+}
+
+.landing-faq summary {
+  list-style: none;
+}
+.landing-faq summary::-webkit-details-marker {
+  display: none;
+}
+
+/* ============================================================
+   REVEAL — conteudo da landing surgindo no scroll (Reveal.tsx)
+   ============================================================ */
+/*
+   `.reveal` anima o bloco; `.reveal-stagger` anima cada filho direto em
+   sequencia. O estado escondido so existe ate a classe `is-in` chegar.
+   Variaveis: --reveal-delay (atraso inicial), --reveal-step (entre filhos),
+   --reveal-i (indice do filho, do nth-child abaixo).
+*/
+.reveal,
+.reveal-stagger > * {
+  --reveal-x: 0px;
+  --reveal-y: 0px;
+  --reveal-s: 1;
+  opacity: 0;
+  transform: translate3d(var(--reveal-x), var(--reveal-y), 0) scale(var(--reveal-s));
+  transition:
+    opacity 0.7s var(--ease),
+    transform 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+    filter 0.8s var(--ease),
+    clip-path 0.9s steps(18, end);
+  transition-delay: calc(var(--reveal-delay, 0ms) + var(--reveal-i, 0) * var(--reveal-step, 90ms));
+}
+.reveal.is-in,
+.reveal-stagger.is-in > * {
+  opacity: 1;
+  transform: none;
+  filter: none;
+  clip-path: inset(0 0 0 0);
+}
+
+.reveal-up,
+.reveal-stagger.reveal-up > * {
+  --reveal-y: 28px;
+}
+.reveal-left,
+.reveal-stagger.reveal-left > * {
+  --reveal-x: -56px;
+}
+.reveal-right,
+.reveal-stagger.reveal-right > * {
+  --reveal-x: 56px;
+}
+.reveal-scale,
+.reveal-stagger.reveal-scale > * {
+  --reveal-s: 0.86;
+}
+.reveal-focus,
+.reveal-stagger.reveal-focus > * {
+  --reveal-s: 1.06;
+  filter: blur(10px);
+}
+/* Mesma armadilha do digitado: no modo stagger a regra do blur empata com o
+   `.is-in` e vence por vir depois. */
+.reveal-stagger.reveal-focus.is-in > * {
+  filter: none;
+}
+/* Digitado: o bloco aparece inteiro de uma vez em opacidade e e "escrito"
+   por um clip-path que anda em degraus. */
+.reveal.reveal-type,
+.reveal-stagger.reveal-type > * {
+  opacity: 1;
+  clip-path: inset(0 100% 0 0);
+}
+/* Precisa de uma classe a mais que a regra acima: com a mesma especificidade,
+   a regra escondida vinha depois no arquivo e ganhava do `.is-in` generico —
+   o texto nunca aparecia (painel da contencao vazio, rotulos das secoes). */
+.reveal.reveal-type.is-in,
+.reveal-stagger.reveal-type.is-in > * {
+  clip-path: inset(0 0 0 0);
+}
+/* Tubo de CRT acendendo: pisca duas vezes antes de firmar. */
+.reveal.reveal-flicker,
+.reveal-stagger.reveal-flicker > * {
+  transition: none;
+}
+.reveal.reveal-flicker.is-in,
+.reveal-stagger.reveal-flicker.is-in > * {
+  animation: revealFlicker 0.55s steps(1, end) both;
+  animation-delay: calc(var(--reveal-delay, 0ms) + var(--reveal-i, 0) * var(--reveal-step, 90ms));
+}
+@keyframes revealFlicker {
+  0% {
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.8;
+  }
+  25% {
+    opacity: 0.1;
+  }
+  45% {
+    opacity: 1;
+  }
+  55% {
+    opacity: 0.35;
+  }
+  70%,
+  100% {
+    opacity: 1;
+  }
+}
+
+.reveal-stagger > :nth-child(1) {
+  --reveal-i: 0;
+}
+.reveal-stagger > :nth-child(2) {
+  --reveal-i: 1;
+}
+.reveal-stagger > :nth-child(3) {
+  --reveal-i: 2;
+}
+.reveal-stagger > :nth-child(4) {
+  --reveal-i: 3;
+}
+.reveal-stagger > :nth-child(5) {
+  --reveal-i: 4;
+}
+.reveal-stagger > :nth-child(6) {
+  --reveal-i: 5;
+}
+.reveal-stagger > :nth-child(7) {
+  --reveal-i: 6;
+}
+.reveal-stagger > :nth-child(8) {
+  --reveal-i: 7;
+}
+.reveal-stagger > :nth-child(9) {
+  --reveal-i: 8;
+}
+.reveal-stagger > :nth-child(10) {
+  --reveal-i: 9;
+}
+.reveal-stagger > :nth-child(11) {
+  --reveal-i: 10;
+}
+.reveal-stagger > :nth-child(12) {
+  --reveal-i: 11;
+}
+
+/* Arquetipo: a arte "abre" do lado em que esta, junto com a linha deslizando. */
+.reveal .landing-art-wipe {
+  clip-path: inset(0 100% 0 0);
+  transition: clip-path 1.1s cubic-bezier(0.65, 0, 0.35, 1) 0.15s;
+}
+.reveal.reveal-right .landing-art-wipe {
+  clip-path: inset(0 0 0 100%);
+}
+.reveal.is-in .landing-art-wipe {
+  clip-path: inset(0 0 0 0);
+}
+
+/* ----- Painel de demonstracao: tudo se mexe quando entra na tela ----- */
+
+/* Linha do e1RM se desenhando; pathLength=1 no SVG. */
+.demo-line {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset 1.6s cubic-bezier(0.65, 0, 0.35, 1) 0.2s;
+}
+.is-live .demo-line {
+  stroke-dashoffset: 0;
+}
+/* Marcador do recorde: aparece quando a linha chega nele. */
+.demo-dot {
+  opacity: 0;
+  transform: scale(0);
+  transform-box: fill-box;
+  transform-origin: center;
+  transition:
+    opacity 0.3s,
+    transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition-delay: 1.7s;
+}
+.is-live .demo-dot {
+  opacity: 1;
+  transform: scale(1);
+}
+.demo-pr {
+  opacity: 0;
+  transition: opacity 0.4s 1.9s;
+}
+.is-live .demo-pr {
+  opacity: 1;
+}
+
+/* Heatmap: onda da esquerda pra direita, uma coluna (semana) por vez. */
+.demo-heat {
+  opacity: 0;
+  transform: scale(0.3);
+  transition:
+    opacity 0.3s,
+    transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+    background 0.15s,
+    border-color 0.15s;
+  transition-delay: var(--heat-delay, 0ms);
+}
+.is-live .demo-heat {
+  opacity: 1;
+  transform: none;
+}
+
+/* Escada de 9 entalhes acendendo em sequencia. */
+.landing .rank-notch:nth-child(1) {
+  transition-delay: 200ms;
+}
+.landing .rank-notch:nth-child(2) {
+  transition-delay: 290ms;
+}
+.landing .rank-notch:nth-child(3) {
+  transition-delay: 380ms;
+}
+.landing .rank-notch:nth-child(4) {
+  transition-delay: 470ms;
+}
+.landing .rank-notch:nth-child(5) {
+  transition-delay: 560ms;
+}
+.landing .rank-notch:nth-child(6) {
+  transition-delay: 650ms;
+}
+.landing .rank-notch:nth-child(7) {
+  transition-delay: 740ms;
+}
+.landing .rank-notch:nth-child(8) {
+  transition-delay: 830ms;
+}
+.landing .rank-notch:nth-child(9) {
+  transition-delay: 920ms;
+}
+
+/* Insignia: gira de leve e assenta. */
+.demo-sigil {
+  opacity: 0;
+  transform: rotate(-25deg) scale(0.6);
+  transition:
+    opacity 0.5s,
+    transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.is-live .demo-sigil {
+  opacity: 1;
+  transform: none;
+}
+
+/* Sem movimento: tudo visivel e parado desde o inicio, sem depender do scroll. */
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .reveal-stagger > *,
+  .reveal .landing-art-wipe,
+  .demo-heat,
+  .demo-dot,
+  .demo-pr,
+  .demo-sigil {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+    clip-path: none !important;
+    animation: none !important;
+  }
+  .demo-line {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* ============================================================
    REDUCED MOTION — desliga tudo que se mexe sozinho
    ============================================================ */
 @media (prefers-reduced-motion: reduce) {

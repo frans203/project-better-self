@@ -34,7 +34,7 @@ export function RankBreakdown() {
           <Badge tone="fail">−{rank.demotion} por recaída</Badge>
         )}
         <Link
-          to="/rank"
+          to="/app/rank"
           aria-label="Abrir tela de nível"
           className="shrink-0 p-1 text-text-muted transition-colors hover:text-white"
         >

@@ -21,7 +21,7 @@ export function RankPanel() {
   return (
     <Panel scan className="p-0">
       <Link
-        to="/rank"
+        to="/app/rank"
         className="flex items-center gap-4 p-5 transition-colors hover:bg-white/3"
       >
         <RankSigil rank={rank.current} size={44} className="shrink-0 text-white" />

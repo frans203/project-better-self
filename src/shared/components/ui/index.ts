@@ -1,4 +1,5 @@
 export { Button, type ButtonProps } from './Button'
+export { buttonVariants } from './button-variants'
 export { Panel, PanelHeader, SectionLabel } from './Panel'
 export { StatCard } from './StatCard'
 export { Meter, StreakBar } from './Meter'
