@@ -5,7 +5,7 @@
 >
 > Escopo: (1) pesquisa de mercado e diferencial, (2) público-alvo, (3) planos por arquétipo e
 > freemium, (4) API em NestJS com adapters (banco e gateway), (5) gateway AbacatePay,
-> (6) backup e portabilidade de dados, (7) página inicial (landing), (8) ordem de execução.
+> (6) backup e portabilidade de dados, (7) página inicial (landing), (8) ordem de execução, (9) ideias futuras.
 >
 > Pesquisa feita em nov/2026. Preços de concorrentes vêm de listagens de loja e blogs de
 > comparação — conferir antes de usar como âncora final.
@@ -250,6 +250,13 @@ Por que esses cortes:
   do dia 8 e no checkout.
 
 ### 4.5 Tiers e preço (BRL)
+
+> **Decisão de 11/11/2026 (substitui as tabelas abaixo no lançamento):** além do RECRUTA
+> grátis, só dois planos pagos, os dois com **preço de fundador travado para sempre** para quem
+> assinar agora: **FUNDADOR MENSAL R$ 19,90/mês** e **FUNDADOR ANUAL R$ 100/ano** (~R$ 8,34/mês,
+> 58% abaixo do mensal). O vitalício saiu. Os dois dão o mesmo acesso (o do OPERATIVO abaixo).
+> Valores em `src/features/landing/content.ts`. Em aberto: se o preço travado sobrevive a um
+> cancelamento seguido de reassinatura, e se existe limite de vagas ou data de corte.
 
 | | **RECRUTA** (grátis) | **OPERATIVO** (Pro) | **FUNDADOR** (vitalício, lote limitado) |
 |---|---|---|---|
@@ -822,11 +829,79 @@ de rodar (§10.2-A).
 - `choose_archetype` direto no Supabase ou toda escrita de arquétipo/trial pela API? (§10.3)
 - Histórico de cobrança: apagar junto com a conta (`cascade`) ou guardar (`set null`) por obrigação fiscal?
 - Codinomes finais e artista dos arquétipos.
-- Landing em `/` com app em `/app/*`, ou landing condicional em `/`?
+- ~~Landing em `/` com app em `/app/*`, ou landing condicional em `/`?~~ **Decidido (11/11/2026):** landing em `/`, app em `/app/*`, logado em `/` vai para `/app`.
 - Checkout hospedado (rápido) ou PIX transparente dentro do terminal (mais bonito) no MVP?
 - Kysely ou Drizzle no adapter Postgres?
 - Contenção ligada por padrão ou opt-in no onboarding?
 - Preço final após confirmar taxas reais do AbacatePay.
+
+---
+
+## 12. Ideias futuras
+
+Fora da ordem de execução do §10. Entram depois do lançamento.
+
+### 12.1 Notificações no tom do terminal
+
+O tom da landing vale também para o que o app manda ao usuário: recorde, mudança de rank e
+lembrete diário. A notificação é **registro, não cobrança**. Informa o que aconteceu e, quando
+o rank cai, diz o que traz ele de volta. Os textos partem da seção 8 (microcopy) da pesquisa de
+copy (Gemini, nov/2026), ajustados às regras do `CLAUDE.md` e ao motor de rank real.
+
+**Canais**
+
+| Canal | Estado | Observação |
+|---|---|---|
+| No app (`Snackbar`, `/rank`) | Existe | PR já aparece no `WorkoutFormModal`; promoção tem confete em `/rank` |
+| Push (Web Push) | Não existe | Exige PWA + service worker (fase 9 do `PLAN.md`, pendente). No iOS só funciona com o PWA instalado na tela inicial (16.4+) |
+
+**Catálogo (rascunho)**
+
+| Evento | Canal | Texto |
+|---|---|---|
+| Recorde pessoal | app + push | `[ NOVO RECORDE ] SUPINO RETO — 1RM ESTIMADO 102,5 KG (+4 KG).` |
+| Recorde, variação | app | `[ META DE CARGA ATINGIDA. NENHUMA CELEBRAÇÃO ADICIONAL SERÁ EMITIDA. ]` |
+| Promoção de rank | app + push | `[ PROMOÇÃO ] REQUISITOS CUMPRIDOS. NOVO POSTO: SARGENTO.` |
+| Queda por janela (7/15 dias) | app + push | `[ REBAIXAMENTO ] VOLUME DOS ÚLTIMOS 7 DIAS ABAIXO DO REQUISITO. PRATA → BRONZE. O PRÓXIMO TREINO CONTA.` |
+| Queda por recaída | **só app** | `[ DESVIO DE PROTOCOLO REGISTRADO ] CONTADOR REINICIADO. NÍVEL: PRATA → BRONZE.` |
+| Lembrete diário | push | `[ OPERAÇÃO DIÁRIA ] 20:00. LOG DE HOJE EM ABERTO.` |
+| Lembrete de academia | push | `[ ACADEMIA ] SEM TREINO REGISTRADO HOJE. SE FOI DESCANSO, NADA A FAZER.` |
+| Lembrete de corrida | push | `[ CORRIDA ] SEM REGISTRO HOJE. SE CORREU, INSIRA OS KM.` |
+
+**Regras**
+
+- **Push nunca menciona contenção, recaída ou no-PMO.** A tela de bloqueio é pública, e o dado
+  é sensível (LGPD art. 11, ver §8). O lembrete de contenção, se existir, sai como o genérico
+  `[ OPERAÇÃO DIÁRIA ]`.
+- **Dia sem registro não é falha.** Nada de "falta", "penalização" ou contagem até a meia-noite.
+  O rank cai porque a janela de 7/15 dias anda, nunca por um dia isolado.
+- Queda de rank sempre vem com o requisito que faltou. Sem isso vira bronca.
+- `1RM ESTIMADO`, não `1RM`: o número vem do Epley (`workout_sets.e1rm`), não de um teste de 1 repetição.
+- Opt-in por categoria (recorde, rank, lembrete) e horário do lembrete escolhido pelo usuário.
+  No máximo 1 lembrete por dia, e nenhum se o dia já tem registro.
+- Recorde e rank notificam no plano grátis também (§4.3: PR é sempre grátis).
+- Sem emoji, sem "parabéns", sem exclamação. Palavras proibidas da pesquisa: foco, força, fé,
+  guerreiro, campeão, transformação, mudar de vida.
+
+**Cortado da pesquisa, e por quê**
+
+| Texto sugerido | Motivo |
+|---|---|
+| `NÃO DEIXE O SISTEMA MARCAR FALTA` · `REGISTRE ANTES DA MEIA-NOITE OU SOFRA PENALIZAÇÃO DE RANK` | Contradiz "dia sem registro não é falha", e o motor não penaliza dia isolado |
+| `INATIVIDADE POR 48H. RANK REDUZIDO` | Regra que não existe: o rank usa janelas de 7/15 dias |
+| `SEU DESEMPENHO CAIU 12% NESTA SEMANA` | Métrica inventada. Semana de deload não é queda |
+| `PROTOCOLO NO-PMO: MAIS UM DIA CONCLUÍDO` | Contenção na tela de bloqueio |
+| `VOLTE AO TRABALHO` (após recaída) | Soa como bronca. A pesquisa mesmo pede tratar recaída friamente |
+
+**Dependências técnicas**
+
+- PWA + service worker + chaves VAPID; tabela `push_subscriptions` (uma linha por dispositivo).
+- Envio agendado (lembrete, queda por janela) precisa de servidor: job na API (H1/H2).
+- Queda e promoção hoje só existem no front (`shared/lib/rank.ts`, nada persistido). Para o
+  servidor detectar a mudança, o cálculo precisa rodar na API (módulo compartilhado ou H7) e
+  guardar o último nível notificado.
+- Analytics: `notification_sent` / `notification_opened` com `category` (§10.1), para medir se
+  o lembrete traz o usuário de volta ou só gera opt-out.
 
 ---
 
