@@ -55,7 +55,7 @@ src/
                 BootScreen · NotFoundPage
       charts/   chart-theme.ts · ChartFrame.tsx
   features/
-    home/ · checkin/ · running/ · gym/ · reports/ · profile/
+    home/ · checkin/ · running/ · gym/ · reports/ · profile/ · landing/
       api/         queryOptions + useMutation
       components/  <Nome>Page.tsx como entry point
 supabase/
@@ -68,7 +68,10 @@ supabase/
 - Feature-based. Tudo reutilizavel em `src/shared/`.
 - `queryOptions` factory do TanStack Query v5; chaves centralizadas em `shared/lib/query-client.ts`.
 - Estado de UI em Zustand (`ui-store`), com `persist` no localStorage.
-- **Rotas em ingles, labels em pt-BR.** `/check-in` `/gym` `/running` `/rank` `/reports` `/profile`.
+- **Rotas em ingles, labels em pt-BR.** `/` e a landing publica (logado vai para `/app`); o app
+  vive em `/app/*`: `/app/check-in` `/app/gym` `/app/running` `/app/rank` `/app/reports` `/app/profile`.
+  Link interno sempre com o prefixo `/app`. Os enderecos antigos sem prefixo redirecionam
+  (`app/LegacyRedirect.tsx`).
 
 ### Estilos
 - Tailwind v4 com bloco `@theme` no `index.css` — sem `tailwind.config.js`.

@@ -31,7 +31,7 @@ export function PageHeader({ title, subtitle, action, className }: PageHeaderPro
         {action}
         {/* Perfil nao cabe no bottom nav (5 slots), entao vive aqui no mobile. */}
         <Link
-          to="/profile"
+          to="/app/profile"
           aria-label="Perfil"
           className="p-2 text-text-muted transition-colors hover:text-white md:hidden"
         >

@@ -1,10 +1,12 @@
-import { createBrowserRouter } from 'react-router-dom'
+import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { AppLayout } from '@/shared/components/layout/AppLayout'
 import { HomePage } from '@/features/home/components/HomePage'
 import { NotFoundPage } from '@/shared/components/layout/NotFoundPage'
 import { LoginPage } from '@/features/auth/components/LoginPage'
 import { RequireSession } from '@/features/auth/components/RequireSession'
 import { RouteErrorPage } from '@/shared/components/layout/RouteErrorPage'
+import { LandingRoute } from '@/features/landing/components/LandingRoute'
+import { LegacyRedirect } from './LegacyRedirect'
 
 /**
  * Chunk que sumiu depois de um deploy novo.
@@ -43,9 +45,12 @@ function lazyRoute(load: () => Promise<Record<string, unknown>>, name: string) {
 /**
  * Rotas em ingles, rotulos em pt-BR (PLAN.md 5).
  *
- * Tudo abaixo de "/" fica atras do RequireSession. `/login` e a unica rota
- * fora dele — e nao e lazy: e a primeira tela de quem chega deslogado, um
- * chunk separado so adicionaria um round-trip antes do formulario aparecer.
+ * `/` e a landing publica. Quem tem sessao e mandado para `/app` (o
+ * LandingRoute decide). O app inteiro vive em `/app/*`, atras do
+ * RequireSession. `/login` fica fora dos dois.
+ *
+ * O login nao e lazy: e a primeira tela de quem entra numa rota interna sem
+ * sessao, e um chunk separado so adicionaria um round-trip antes do formulario.
  *
  * A home entra no bundle inicial — e a primeira tela e precisa pintar rapido.
  * O resto e lazy: Recharts sozinho passa de 400kB e so importa nas telas de
@@ -53,9 +58,17 @@ function lazyRoute(load: () => Promise<Record<string, unknown>>, name: string) {
  * flash de layout vazio.
  */
 export const router = createBrowserRouter([
+  { path: '/', element: <LandingRoute />, errorElement: <RouteErrorPage /> },
   { path: '/login', element: <LoginPage />, errorElement: <RouteErrorPage /> },
+  // Endereco antigo da landing, de antes dela virar a home.
+  { path: '/landing', element: <Navigate to="/" replace /> },
+  // Enderecos de antes do /app (favorito, atalho na tela inicial do celular).
+  ...['check-in', 'gym/*', 'running', 'rank', 'reports', 'profile'].map((path) => ({
+    path,
+    element: <LegacyRedirect />,
+  })),
   {
-    path: '/',
+    path: '/app',
     element: (
       <RequireSession>
         <AppLayout />
@@ -98,4 +111,5 @@ export const router = createBrowserRouter([
       { path: '*', element: <NotFoundPage /> },
     ],
   },
+  { path: '*', element: <Navigate to="/" replace /> },
 ])

@@ -205,7 +205,7 @@ export function HomePage() {
                   Check-in de hoje
                 </p>
                 <Link
-                  to="/check-in"
+                  to="/app/check-in"
                   className="text-[10px] uppercase tracking-[0.15em] text-text-muted transition-colors hover:text-white"
                 >
                   Detalhar

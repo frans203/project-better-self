@@ -208,7 +208,7 @@ export function GymPage() {
                   return (
                     <li key={ex.id}>
                       <Link
-                        to={`/gym/exercise/${ex.id}`}
+                        to={`/app/gym/exercise/${ex.id}`}
                         className="entry-card flex items-center gap-4 p-4 transition-colors"
                       >
                         <div className="min-w-0 flex-1">

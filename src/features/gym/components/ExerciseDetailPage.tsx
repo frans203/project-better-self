@@ -78,7 +78,7 @@ export function ExerciseDetailPage() {
         subtitle={`${sessions.length} sessões registradas`}
         action={
           <Link
-            to="/gym"
+            to="/app/gym"
             aria-label="Voltar para academia"
             className="border border-border-default p-2 text-text-muted transition-colors hover:border-white hover:text-white"
           >

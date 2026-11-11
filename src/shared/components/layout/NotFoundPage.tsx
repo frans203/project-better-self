@@ -8,7 +8,7 @@ export function NotFoundPage() {
       <p className="text-[11px] uppercase tracking-[0.2em] text-text-muted terminal-text">
         Setor não mapeado
       </p>
-      <Link to="/">
+      <Link to="/app">
         <Button variant="outline" size="sm">
           Voltar para a base
         </Button>
