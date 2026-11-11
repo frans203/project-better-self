@@ -12,13 +12,13 @@ export interface NavItem {
 
 /** Rotas em ingles, rotulos em pt-BR. Ver PLAN.md secao 5. */
 export const NAV_ITEMS: NavItem[] = [
-  { to: '/', label: 'Base', icon: LayoutGrid, end: true, inBottomNav: true },
-  { to: '/check-in', label: 'Check-in', icon: SquareCheck, inBottomNav: true },
-  { to: '/gym', label: 'Academia', icon: Dumbbell, inBottomNav: true },
-  { to: '/running', label: 'Corrida', icon: Footprints, inBottomNav: true },
-  { to: '/rank', label: 'Nível', icon: Medal, inBottomNav: true },
-  { to: '/reports', label: 'Relatório', icon: BarChart3, inBottomNav: true },
-  { to: '/profile', label: 'Perfil', icon: User, inBottomNav: false },
+  { to: '/app', label: 'Base', icon: LayoutGrid, end: true, inBottomNav: true },
+  { to: '/app/check-in', label: 'Check-in', icon: SquareCheck, inBottomNav: true },
+  { to: '/app/gym', label: 'Academia', icon: Dumbbell, inBottomNav: true },
+  { to: '/app/running', label: 'Corrida', icon: Footprints, inBottomNav: true },
+  { to: '/app/rank', label: 'Nível', icon: Medal, inBottomNav: true },
+  { to: '/app/reports', label: 'Relatório', icon: BarChart3, inBottomNav: true },
+  { to: '/app/profile', label: 'Perfil', icon: User, inBottomNav: false },
 ]
 
 export const BOTTOM_NAV_ITEMS = NAV_ITEMS.filter((i) => i.inBottomNav)

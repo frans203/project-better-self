@@ -34,7 +34,7 @@ export function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
-  const from = (location.state as { from?: string } | null)?.from ?? '/'
+  const from = (location.state as { from?: string } | null)?.from ?? '/app'
 
   // Ja logado: nao faz sentido mostrar o formulario. Cobre tanto o acesso
   // direto a /login quanto o instante seguinte ao signIn — o onAuthStateChange
