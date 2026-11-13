@@ -33,6 +33,13 @@ npm run lint     # ESLint
 npm run preview  # Preview do build
 
 node scripts/optimize-wallpapers.mjs   # gera webp desktop/mobile + LQIP
+
+npm run check:contracts   # tipos + casos do contracts/api.ts
+
+# API (NestJS) — projeto proprio em server/, ver server/README.md
+cd server && npm run start:dev   # porta 3000, le server/.env
+cd server && npm test            # Vitest + Postgres em memoria (PGlite), sem Docker
+cd server && npm run typecheck
 ```
 
 ## Estrutura
@@ -60,7 +67,24 @@ src/
       components/  <Nome>Page.tsx como entry point
 supabase/
   migrations/  0001_init.sql (rodar) · 0002_enable_auth.sql (nao rodar ainda)
+contracts/     api.ts — contrato front x API (tipos + hasEntitlement)
+server/        NestJS 12 (ESM). core/ (config, envelope, erro) · auth/ (guard JWT, JWKS)
+               db/ (Kysely) · modules/<x>/ (domain · ports · adapters) · test/support (PGlite)
 ```
+
+### API (`server/`)
+- **NestJS 12 e ESM.** Import relativo termina em `.js`, `import.meta.dirname` no lugar de
+  `__dirname`, testes em Vitest (`vi.fn()`).
+- O `tsconfig` do `server/` tem `rootDir: ".."` para compilar o `contracts/api.ts` junto: o build
+  sai em `dist/server/src/main.js`. Import do contrato sempre por `server/src/contracts.ts`.
+- **Toda rota exige JWT** (guard global); rota aberta precisa de `@Public()`. `userId` so por
+  `@UserId()`, nunca do body (SAAS_PLAN §5.3).
+- Erro so por `ApiException(codigo, mensagem)` com codigo do contrato; o resto vira `INTERNAL`
+  e o detalhe fica so no log. Sucesso: controller devolve o dado puro, o interceptor envelopa.
+- **Kysely so dentro de adapter.** Use case e controller falam com port (SAAS_PLAN §5.1).
+- JWT validado por JWKS: o projeto Supabase precisa de chave de assinatura **assimetrica**
+  (Settings > JWT Keys). Com o segredo HS256 legado o JWKS vem vazio e tudo da 401.
+- Rota inexistente da 404 mesmo sem token: o guard so roda em rota que existe.
 
 ## Convencoes
 

@@ -327,7 +327,7 @@ Manter o front exatamente onde está e adicionar a API ao lado, sem reestruturar
 project-better-self/
   src/            # front (inalterado)
   supabase/       # migrations (continuam a fonte da verdade do schema)
-  api/            # NOVO — projeto NestJS independente (package.json próprio)
+  server/         # NOVO — projeto NestJS independente (package.json próprio)
     src/
       main.ts                 # rawBody: true (webhook precisa do corpo cru p/ HMAC)
       app.module.ts
@@ -709,7 +709,7 @@ converte.
 **Critério:** cortar pela fronteira do código para os dois quase nunca mexerem no mesmo arquivo.
 Francisco construiu o front e conhece o design system, o motor de rank e as convenções → fica
 com **front, produto e marca**. Henrique entra do zero, e a API NestJS também começa do zero
-(pasta `api/` nova, sem histórico para aprender) → fica com **API, pagamento e infraestrutura**.
+(pasta `server/` nova, sem histórico para aprender) → fica com **API, pagamento e infraestrutura**.
 Se o perfil do Henrique for mais front, inverter os blocos B e C.
 
 ### A. Juntos (semana 1, antes de dividir)
@@ -742,7 +742,7 @@ Regra: **migração de banco sempre revisada pelos dois** antes de rodar — o b
 
 | # | Tarefa | Seção | Depende de |
 |---|---|---|---|
-| H1 | Esqueleto NestJS em `api/`: config, envelope + filtro de erro, guard JWT do Supabase (JWKS), adapter Postgres (Kysely/Drizzle) | §5 | A |
+| H1 | Esqueleto NestJS em `server/`: config, envelope + filtro de erro, guard JWT do Supabase (JWKS), adapter Postgres (Kysely/Drizzle) | §5 | A |
 | H2 | Ambientes dev/prod (projeto Supabase separado para dev, chaves AbacatePay de teste), deploy da API, CI com build + lint | §5.5 | H1 |
 | H3 | `PaymentGateway` + `AbacatePayGateway` + checkout (hospedado ou PIX transparente) | §6.2 | H1 |
 | H4 | Webhook (HMAC, idempotência, `payment_events`) → `subscriptions` → `entitlements`; `GET /me/entitlements`; trial de 7 dias no cadastro | §6.3, §6.4, §4.7 | H3 |
@@ -786,7 +786,7 @@ registra o que acontece com os dois primeiros PRs dele.
 
 | PR | Decisão | Por quê |
 |---|---|---|
-| **#2** — contrato da API (`contracts/api.ts`) | **Merge.** | Não é só referência: é o arquivo que o `api/` e o front vão importar. Nenhuma tela do app usa ainda, então o app não muda. Ajustes futuros entram como PR no contrato (§10.2-E). Ficam como estão: `returnUrl` fora do checkout, preço vindo da tabela `plans`, `cosmetic.founder` fora do `feature:*`. |
+| **#2** — contrato da API (`contracts/api.ts`) | **Merge.** | Não é só referência: é o arquivo que o `server/` e o front vão importar. Nenhuma tela do app usa ainda, então o app não muda. Ajustes futuros entram como PR no contrato (§10.2-E). Ficam como estão: `returnUrl` fora do checkout, preço vindo da tabela `plans`, `cosmetic.founder` fora do `feature:*`. |
 | **#3** — migração `0004_billing.sql` | **Referência, fora de `supabase/migrations/`.** O SQL vai para `docs/reference/0004_billing.draft.sql`, sem as mudanças em `CLAUDE.md` e `database.types.ts`, e o PR é fechado. | Ver abaixo. |
 
 **Por que o #3 não entra como está:**
@@ -800,13 +800,13 @@ registra o que acontece com os dois primeiros PRs dele.
   - `choose_archetype` com SECURITY DEFINER deixa o front gravar arquétipo e trial direto no
     Supabase, sem passar pela API. Isso precisa ser decidido junto com o desenho do Nest:
     toda escrita de billing e trial pela API, ou essa exceção para o onboarding (F3) não esperar.
-  - Se o adapter for Drizzle (§11), as migrações podem passar a ser geradas pelo `api/`, e uma
+  - Se o adapter for Drizzle (§11), as migrações podem passar a ser geradas pelo `server/`, e uma
     0004 escrita à mão entraria em conflito.
   - `on delete cascade` em `subscriptions`/`checkouts`: falta confirmar se existe obrigação
     fiscal de guardar o histórico de cobrança depois que a conta é apagada.
 
 **O que o #3 deixa de base para o H1/H4**, e deve ser mantido quando o schema for refeito
-junto com o `api/`:
+junto com o `server/`:
 - gatilho `profiles_protect_billing`: o usuário não consegue esticar o próprio trial com um
   PATCH direto (a policy `owner_all` permitiria);
 - billing só leitura para o usuário, `payment_events` fechada, só a API escreve (chave de serviço);
@@ -816,7 +816,7 @@ junto com o `api/`:
   pegaram: `archetype_kratos` passava com codinome nulo);
 - trial e arquétipo escolhido calculados de `profiles`, não gravados em `entitlements`;
 - os 35 casos testados no PGlite viram a lista de testes da migração final. Vale trazer o
-  script de teste para o repo junto com o `api/` (H1).
+  script de teste para o repo junto com o `server/` (H1).
 
 **Próximo passo:** o schema de billing volta como migração real dentro do H1/H4, depois de
 decidir o adapter (Kysely ou Drizzle) e o `choose_archetype`, e com a revisão dos dois antes
