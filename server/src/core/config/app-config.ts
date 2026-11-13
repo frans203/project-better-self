@@ -56,7 +56,7 @@ export class AppConfig {
     const parsed = envSchema.safeParse(env);
     if (!parsed.success) {
       const lines = parsed.error.issues.map((i) => `  - ${i.path.join('.')}: ${i.message}`);
-      throw new Error(`Config invalida (ver api/.env.example):\n${lines.join('\n')}`);
+      throw new Error(`Config invalida (ver server/.env.example):\n${lines.join('\n')}`);
     }
     return new AppConfig(parsed.data);
   }

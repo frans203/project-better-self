@@ -13,8 +13,8 @@
     "target": "ES2023",
     "sourceMap": true,
     "outDir": "./dist",
-    // Raiz do REPO, nao do api/: o contrato (../contracts/api.ts) e compilado junto.
-    // Saida: dist/api/src/main.js e dist/contracts/api.js — por isso o start:prod.
+    // Raiz do REPO, nao do server/: o contrato (../contracts/api.ts) e compilado junto.
+    // Saida: dist/server/src/main.js e dist/contracts/api.js — por isso o start:prod.
     "rootDir": "..",
     "incremental": true,
     "skipLibCheck": true,

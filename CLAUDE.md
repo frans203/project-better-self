@@ -36,10 +36,10 @@ node scripts/optimize-wallpapers.mjs   # gera webp desktop/mobile + LQIP
 
 npm run check:contracts   # tipos + casos do contracts/api.ts
 
-# API (NestJS) — projeto proprio em api/, ver api/README.md
-cd api && npm run start:dev   # porta 3000, le api/.env
-cd api && npm test            # Vitest + Postgres em memoria (PGlite), sem Docker
-cd api && npm run typecheck
+# API (NestJS) — projeto proprio em server/, ver server/README.md
+cd server && npm run start:dev   # porta 3000, le server/.env
+cd server && npm test            # Vitest + Postgres em memoria (PGlite), sem Docker
+cd server && npm run typecheck
 ```
 
 ## Estrutura
@@ -68,15 +68,15 @@ src/
 supabase/
   migrations/  0001_init.sql (rodar) · 0002_enable_auth.sql (nao rodar ainda)
 contracts/     api.ts — contrato front x API (tipos + hasEntitlement)
-api/           NestJS 12 (ESM). core/ (config, envelope, erro) · auth/ (guard JWT, JWKS)
+server/        NestJS 12 (ESM). core/ (config, envelope, erro) · auth/ (guard JWT, JWKS)
                db/ (Kysely) · modules/<x>/ (domain · ports · adapters) · test/support (PGlite)
 ```
 
-### API (`api/`)
+### API (`server/`)
 - **NestJS 12 e ESM.** Import relativo termina em `.js`, `import.meta.dirname` no lugar de
   `__dirname`, testes em Vitest (`vi.fn()`).
-- O `tsconfig` do `api/` tem `rootDir: ".."` para compilar o `contracts/api.ts` junto: o build
-  sai em `dist/api/src/main.js`. Import do contrato sempre por `api/src/contracts.ts`.
+- O `tsconfig` do `server/` tem `rootDir: ".."` para compilar o `contracts/api.ts` junto: o build
+  sai em `dist/server/src/main.js`. Import do contrato sempre por `server/src/contracts.ts`.
 - **Toda rota exige JWT** (guard global); rota aberta precisa de `@Public()`. `userId` so por
   `@UserId()`, nunca do body (SAAS_PLAN §5.3).
 - Erro so por `ApiException(codigo, mensagem)` com codigo do contrato; o resto vira `INTERNAL`

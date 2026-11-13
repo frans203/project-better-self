@@ -1,4 +1,4 @@
-# api/ — API NestJS
+# server/ — API NestJS
 
 Back-end do OPERATION: BETTER SELF (SAAS_PLAN.md §5). Projeto independente do front:
 `package.json` próprio, mesmo repositório.
@@ -9,7 +9,7 @@ continua falando direto com o Supabase até a fase B do strangler (§5.5).
 ## Rodar
 
 ```bash
-cd api
+cd server
 npm install
 cp .env.example .env      # e preenche
 npm run start:dev         # http://localhost:3000/health
@@ -18,12 +18,12 @@ npm run start:dev         # http://localhost:3000/health
 | Comando | O que faz |
 |---|---|
 | `npm run start:dev` | Sobe com watch |
-| `npm run build` | Compila para `dist/` (`dist/api/src/main.js` + `dist/contracts/api.js`) |
+| `npm run build` | Compila para `dist/` (`dist/server/src/main.js` + `dist/contracts/api.js`) |
 | `npm run start:prod` | Roda o build |
 | `npm test` | Vitest: unitários + e2e com Postgres em memória (PGlite), sem Docker |
 | `npm run typecheck` | `tsc --noEmit`, inclui os testes e os `@ts-expect-error` |
 
-Lint é o da raiz (`npm run lint` no repo inteiro já cobre `api/`).
+Lint é o da raiz (`npm run lint` no repo inteiro já cobre `server/`).
 
 ## Estrutura
 

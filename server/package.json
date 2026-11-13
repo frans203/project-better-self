@@ -10,7 +10,7 @@
     "build": "nest build",
     "start": "nest start",
     "start:dev": "nest start --watch",
-    "start:prod": "node dist/api/src/main.js",
+    "start:prod": "node dist/server/src/main.js",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run",
     "test:watch": "vitest"

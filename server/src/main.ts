@@ -4,7 +4,7 @@ import type { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module.js';
 import { AppConfig } from './core/config/app-config.js';
 
-// Em dev le api/.env. Em producao as variaveis vem da hospedagem e o arquivo nao existe.
+// Em dev le server/.env. Em producao as variaveis vem da hospedagem e o arquivo nao existe.
 if (existsSync('.env')) process.loadEnvFile('.env');
 
 async function bootstrap(): Promise<void> {
